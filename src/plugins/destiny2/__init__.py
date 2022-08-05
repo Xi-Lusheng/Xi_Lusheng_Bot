@@ -1,5 +1,4 @@
 from nonebot import on_command
-from nonebot.rule import to_me
 from nonebot.params import CommandArg
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, Bot, Message
 
