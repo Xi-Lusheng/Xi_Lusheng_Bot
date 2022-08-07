@@ -2,12 +2,10 @@ from nonebot.plugin.on import on_message, on_notice, on_regex
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
     Bot,
-    Event,
     GroupMessageEvent,
     Message,
     MessageEvent,
     PokeNotifyEvent,
-    MessageSegment
 )
 from .utils import *
 
@@ -15,10 +13,8 @@ xun = on_regex('^寻$', priority=5, block=True)
 
 
 @xun.handle()
-async def xun(bot: Bot, event: Event):
-    if int(event.get_user_id()) != event.self_id:
-        str1 = '寻是艾斯比'
-        await bot.send(event=event, message=str1)
+async def xun(bot: Bot, event: MessageEvent):
+    await bot.send(event=event, message='寻是艾斯比')
 
 
 # 优先级99, 条件: 艾特bot就触发
