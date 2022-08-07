@@ -105,7 +105,7 @@ _2d = on_command('二次元浓度', priority=5, block=True)
 
 @_2d.handle()
 async def _2d_():
-    if random.random() < 0.9:
+    if random.random() < 0.7:
         try:
             await day.send(Message(str(random.randint(0, 100)) + '%'))
         except:
