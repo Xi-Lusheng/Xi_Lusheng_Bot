@@ -26,6 +26,6 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
                            MessageSegment.image(result['img']) + '\n' + \
                            MessageSegment.text(result['url'])))
     try:
-        await send_forward_msg_group(bot, event, name="初号姬", msgs=msg if msg else ["没有此关键字的卡片"])
+        await send_forward_msg_group(bot, event, name="初号姬", msgs=msg if msg else ["没有在樱花找到这个动漫呢，换个姿势搜索试试"])
     except:
         await sakura.send('插件错误，请联系汐鹿生')

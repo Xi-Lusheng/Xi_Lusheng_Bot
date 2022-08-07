@@ -1,4 +1,4 @@
-from nonebot.plugin.on import on_message, on_notice, on_regex
+from nonebot.plugin.on import on_message, on_notice, on_regex, on_command
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -9,17 +9,8 @@ from nonebot.adapters.onebot.v11 import (
 )
 from .utils import *
 
-xun = on_regex('^寻$', priority=5, block=True)
-
-
-@xun.handle()
-async def xun(bot: Bot, event: MessageEvent):
-    await bot.send(event=event, message='寻是艾斯比')
-
-
-# 优先级99, 条件: 艾特bot就触发
 ai = on_message(rule=to_me(), priority=99, block=False)
-# 优先级1, 不会向下阻断, 条件: 戳一戳bot触发
+
 poke_ = on_notice(rule=to_me(), block=False)
 
 
@@ -59,3 +50,66 @@ async def _(event: MessageEvent):
 async def _poke_event(event: PokeNotifyEvent):
     if event.is_tome:
         await poke_.send(message=f"{random.choice(poke__reply)}")
+
+
+xun = on_regex('^寻$', priority=5, block=True)
+
+
+@xun.handle()
+async def xun():
+    await xun.send('寻是艾斯比')
+
+
+jia_ran = on_regex('(嘉然|然然|嘉心糖)', priority=5, block=True)
+
+
+@jia_ran.handle()
+async def ran():
+    await jia_ran.send(Message(random.choice(ran_pi)))
+
+
+d2 = on_regex('命运2', priority=5, block=True)
+
+
+@d2.handle()
+async def d():
+    await d2.send(Message('狗都不玩'))
+
+
+yuan_shen = on_regex('原神', priority=5, block=True)
+
+
+@yuan_shen.handle()
+async def yuan():
+    await yuan_shen.send(Message('卧槽！有原批'))
+
+
+day = on_regex('小日向', priority=5, block=True)
+
+
+@day.handle()
+async def day_():
+    await day.send(Message('你是不是想找别的女人了QAQ'))
+
+
+wu = on_regex('呜{1,4}', priority=5, block=True)
+
+
+@wu.handle()
+async def wu_():
+    await wu.send(Message(random.choice(wu_wu)))
+
+
+_2d = on_command('二次元浓度', priority=5, block=True)
+
+
+@_2d.handle()
+async def _2d_():
+    if random.random() < 0.9:
+        try:
+            await day.send(Message(str(random.randint(0, 100)) + '%'))
+        except:
+            await day.send(Message(random.choice(potency)))
+    else:
+        await day.send(Message(random.choice(potency)))
+
