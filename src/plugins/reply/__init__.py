@@ -1,6 +1,7 @@
 from nonebot.plugin.on import on_message, on_notice, on_regex, on_command
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
+    Event,
     Bot,
     GroupMessageEvent,
     Message,
@@ -8,8 +9,10 @@ from nonebot.adapters.onebot.v11 import (
     PokeNotifyEvent,
 )
 from .utils import *
+from .msg_data import *
+import re
 
-ai = on_message(rule=to_me(), priority=99, block=False)
+ai = on_message(rule=to_me(), priority=99, block=True)
 
 poke_ = on_notice(rule=to_me(), block=False)
 
@@ -39,6 +42,7 @@ async def _(event: MessageEvent):
         nickname = event.sender.nickname
     # 从字典里获取结果
     result = await get_chat_result(msg, nickname)
+    print(result)
     # 如果词库没有结果，则调用思知获取智能回复
     if result is None:
         message = await get_n(str(msg))
@@ -52,12 +56,30 @@ async def _poke_event(event: PokeNotifyEvent):
         await poke_.send(message=f"{random.choice(poke__reply)}")
 
 
+util_msg = on_message(priority=98, block=False)
+
+
+@util_msg.handle()
+async def util_msg_(event: MessageEvent):
+    msg = str(event.get_message())
+    msg = re.sub(r"\[.*?\]", "", msg)
+    if isinstance(event, GroupMessageEvent):
+        nickname = event.sender.card or event.sender.nickname
+    else:
+        nickname = event.sender.nickname
+    result = await utils_get_chat_result(msg, nickname)
+    if result is None:
+        pass
+    else:
+        await util_msg.finish(Message(result))
+
+
 xun = on_regex('^寻$', priority=5, block=True)
 
 
 @xun.handle()
-async def xun():
-    await xun.send('寻是艾斯比')
+async def xun(bot: Bot, event: Event):
+    await bot.send(event=event, message='寻是艾斯比')
 
 
 jia_ran = on_regex('(嘉然|然然|嘉心糖)', priority=5, block=True)
@@ -68,31 +90,7 @@ async def ran():
     await jia_ran.send(Message(random.choice(ran_pi)))
 
 
-d2 = on_regex('命运2', priority=5, block=True)
-
-
-@d2.handle()
-async def d():
-    await d2.send(Message('狗都不玩'))
-
-
-yuan_shen = on_regex('原神', priority=5, block=True)
-
-
-@yuan_shen.handle()
-async def yuan():
-    await yuan_shen.send(Message('卧槽！有原批'))
-
-
-day = on_regex('小日向', priority=5, block=True)
-
-
-@day.handle()
-async def day_():
-    await day.send(Message('你是不是想找别的女人了QAQ'))
-
-
-wu = on_regex('呜{1,4}', priority=5, block=True)
+wu = on_regex('^呜{1,4}$', priority=5, block=True)
 
 
 @wu.handle()
@@ -107,9 +105,24 @@ _2d = on_command('二次元浓度', priority=5, block=True)
 async def _2d_():
     if random.random() < 0.7:
         try:
-            await day.send(Message(str(random.randint(0, 100)) + '%'))
+            await _2d.send(Message(str(random.randint(0, 100)) + '%'))
         except:
-            await day.send(Message(random.choice(potency)))
+            await _2d.send(Message(random.choice(potency)))
     else:
-        await day.send(Message(random.choice(potency)))
+        await _2d.send(Message(random.choice(potency)))
 
+
+# 低概率复读
+repeat = on_message(priority=97, block=False)
+
+
+@repeat.handle()
+async def repeat_(event: MessageEvent):
+    if random.randint(0, 100) > 99:
+        try:
+            msg = str(event.get_message())
+            await repeat.send(Message(msg))
+        except:
+            pass
+    else:
+        pass
