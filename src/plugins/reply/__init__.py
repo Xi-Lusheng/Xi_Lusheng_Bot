@@ -64,11 +64,7 @@ util_msg = on_message(priority=98, block=False)
 async def util_msg_(event: MessageEvent):
     msg = str(event.get_message())
     msg = re.sub(r"\[.*?\]", "", msg)
-    if isinstance(event, GroupMessageEvent):
-        nickname = event.sender.card or event.sender.nickname
-    else:
-        nickname = event.sender.nickname
-    result = await utils_get_chat_result(msg, nickname)
+    result = await utils_get_chat_result(msg)
     if result is None:
         pass
     else:

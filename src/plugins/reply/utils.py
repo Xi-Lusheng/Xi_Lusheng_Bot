@@ -25,12 +25,12 @@ async def get_chat_result(text: str, nickname: str) -> str:
                 return random.choice(AnimeThesaurus[key]).replace("你", nickname)
 
 
-async def utils_get_chat_result(text: str, nickname: str) -> str:
+async def utils_get_chat_result(text: str) -> str:
     if len(text) < 7:
         keys = Util_Json.keys()
         for key in keys:
             if text.find(key) != -1:
-                return random.choice(Util_Json[key]).replace("你", nickname)
+                return random.choice(Util_Json[key])
 
 
 # 调用思知机器人
