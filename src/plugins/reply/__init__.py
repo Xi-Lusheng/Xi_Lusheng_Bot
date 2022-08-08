@@ -17,6 +17,7 @@ ai = on_message(rule=to_me(), priority=99, block=True)
 poke_ = on_notice(rule=to_me(), block=False)
 
 
+# @对话
 @ai.handle()
 async def _(event: MessageEvent):
     # 获取消息文本
@@ -42,7 +43,6 @@ async def _(event: MessageEvent):
         nickname = event.sender.nickname
     # 从字典里获取结果
     result = await get_chat_result(msg, nickname)
-    print(result)
     # 如果词库没有结果，则调用思知获取智能回复
     if result is None:
         message = await get_n(str(msg))
@@ -56,6 +56,7 @@ async def _poke_event(event: PokeNotifyEvent):
         await poke_.send(message=f"{random.choice(poke__reply)}")
 
 
+# 触发被动词
 util_msg = on_message(priority=98, block=False)
 
 
@@ -72,30 +73,6 @@ async def util_msg_(event: MessageEvent):
         pass
     else:
         await util_msg.finish(Message(result))
-
-
-xun = on_regex('^寻$', priority=5, block=True)
-
-
-@xun.handle()
-async def xun(bot: Bot, event: Event):
-    await bot.send(event=event, message='寻是艾斯比')
-
-
-jia_ran = on_regex('(嘉然|然然|嘉心糖)', priority=5, block=True)
-
-
-@jia_ran.handle()
-async def ran():
-    await jia_ran.send(Message(random.choice(ran_pi)))
-
-
-wu = on_regex('^呜{1,4}$', priority=5, block=True)
-
-
-@wu.handle()
-async def wu_():
-    await wu.send(Message(random.choice(wu_wu)))
 
 
 _2d = on_command('二次元浓度', priority=5, block=True)
@@ -126,3 +103,29 @@ async def repeat_(event: MessageEvent):
             pass
     else:
         pass
+
+
+xun = on_regex('^寻$', priority=5, block=True)
+
+
+@xun.handle()
+async def xun(bot: Bot, event: Event):
+    await bot.send(event=event, message='寻是艾斯比')
+
+
+jia_ran = on_regex('(嘉然|然然|嘉心糖)', priority=5, block=True)
+
+
+@jia_ran.handle()
+async def ran():
+    await jia_ran.send(Message(random.choice(ran_pi)))
+
+
+wu = on_regex('^呜{1,4}$', priority=5, block=True)
+
+
+@wu.handle()
+async def wu_():
+    await wu.send(Message(random.choice(wu_wu)))
+
+
