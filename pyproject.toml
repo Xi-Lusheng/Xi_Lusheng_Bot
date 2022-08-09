@@ -18,6 +18,7 @@ plugins = [
     "nonebot_plugin_ygo",
     "nonebot_plugin_repeater",
     "nonebot_plugin_remake",
+    "nonebot_plugin_baidutranslate"
 ]
 plugin_dirs = ["src/plugins"]
 
