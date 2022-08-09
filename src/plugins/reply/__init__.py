@@ -12,7 +12,7 @@ from .utils import *
 from .msg_data import *
 import re
 
-ai = on_message(rule=to_me(), priority=99, block=True)
+ai = on_message(rule=to_me(), priority=98, block=True)
 
 poke_ = on_notice(rule=to_me(), block=False)
 
@@ -57,7 +57,7 @@ async def _poke_event(event: PokeNotifyEvent):
 
 
 # 触发被动词
-util_msg = on_message(priority=98, block=False)
+util_msg = on_message(priority=99, block=True)
 
 
 @util_msg.handle()
@@ -91,7 +91,7 @@ repeat = on_message(priority=97, block=False)
 
 @repeat.handle()
 async def repeat_(event: MessageEvent):
-    if random.randint(0, 100) > 99:
+    if random.randint(0, 500) == 500:
         try:
             msg = str(event.get_message())
             await repeat.send(Message(msg))
