@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent
 
 
 async def get_sakura(text):
@@ -27,24 +26,4 @@ async def get_sakura(text):
     except TypeError:
         return '快点告诉我你想看什么！'
 
-
-# 消息合并转发
-async def send_forward_msg_group(
-        bot: Bot,
-        event: MessageEvent,
-        name: str,
-        msgs: [],
-):
-    def to_json(msg):
-        return {"type": "node", "data": {"name": name, "uin": bot.self_id, "content": msg}}
-
-    messages = [to_json(msg) for msg in msgs]
-    if isinstance(event, GroupMessageEvent):
-        await bot.call_api(
-            "send_group_forward_msg", group_id=event.group_id, messages=messages
-        )
-    else:
-        await bot.call_api(
-            "send_private_forward_msg", user_id=event.user_id, messages=messages
-        )
 

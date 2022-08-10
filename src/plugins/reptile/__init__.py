@@ -1,8 +1,8 @@
-from nonebot.adapters.onebot.v11 import Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Message, MessageSegment, Bot, MessageEvent
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg, ArgPlainText
 from nonebot.plugin.on import on_command
-
+from utils.utils_def import send_forward_msg_group
 from . import config
 from .utils import *
 
@@ -22,10 +22,10 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
     results = (await get_sakura(str(name)))[:repeater_group]
     msg = []
     for result in results:
-        msg.append(Message(MessageSegment.text(result['name']) + '\n' + \
-                           MessageSegment.image(result['img']) + '\n' + \
+        msg.append(Message(MessageSegment.text(result['name']) + '\n' +
+                           MessageSegment.image(result['img']) + '\n' +
                            MessageSegment.text(result['url'])))
     try:
         await send_forward_msg_group(bot, event, name="初号姬", msgs=msg if msg else ["没有在樱花找到这个动漫呢，换个姿势搜索试试"])
     except:
-        await sakura.send('插件错误，请联系汐鹿生')
+        await sakura.send('找番插件错误，请尽快联系汐鹿生修复')
