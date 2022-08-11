@@ -12,7 +12,7 @@ tu = [
 ]
 
 
-def get_search_pictures(image: str):
+async def get_search_pictures(image: str):
     try:
         url = 'https://saucenao.com/search.php'
         data = {
@@ -28,17 +28,14 @@ def get_search_pictures(image: str):
         result = json.loads(resp.content)
 
         json_data = result['results']
-        print(json_data)
-        from_ = []
         data = []
         for i in json_data:
             similarity = i['header']['similarity']
             imgs = i['header']['thumbnail']
             if 'ext_urls' in i['data'].keys():
-                from_ += i['data']['ext_urls'][0]
+                from_ = (i['data']['ext_urls'][0])
             else:
-                from_.append('没有找到相关链接哦')
-            print(from_)
+                from_ = '没有找到相关链接哦'
             dic = {
                 'image': imgs,
                 'similarity': similarity,
@@ -48,5 +45,3 @@ def get_search_pictures(image: str):
         return data
     except KeyError:
         return '快把图给我交了！'
-
-get_search_pictures('https://gchat.qpic.cn/gchatpic_new/2159313382/857542357-3054880200-6FAB64EDA36655E072E2D0109A58E31E/0?term=3]')
