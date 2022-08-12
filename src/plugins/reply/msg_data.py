@@ -1,7 +1,4 @@
-import nonebot
-
-Bot_NICKNAME: str = list(nonebot.get_driver().config.nickname)[0]
-Bot_MASTER: str = list(nonebot.get_driver().config.superusers)[0]
+from utils.config import Bot_NICKNAME
 
 # 呜呜呜
 wu_wu = [
@@ -29,7 +26,6 @@ hello__reply = [
     "我在呢！",
     "呼呼，叫俺干嘛",
 ]
-
 
 # 戳一戳消息
 poke__reply = [

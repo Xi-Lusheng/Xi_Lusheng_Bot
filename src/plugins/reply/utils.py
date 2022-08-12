@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import random
 import requests
-from .config import app_id, user_id
+from utils.config import app_id, user_id
 
 try:
     import ujson as json

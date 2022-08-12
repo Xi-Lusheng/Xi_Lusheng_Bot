@@ -3,9 +3,9 @@ from nonebot.internal.params import Arg
 from nonebot.params import CommandArg
 from nonebot.plugin.on import on_command
 from nonebot.typing import T_State
+from utils.config import Bot_NICKNAME
 from utils.utils_def import send_forward_msg_group, get_message_img
-from .utils import *
-import random
+from .utils import get_search_pictures
 
 picture = on_command('识图', priority=5, block=True)
 
@@ -17,7 +17,7 @@ async def _(event: MessageEvent, state: T_State, args: Message = CommandArg()):
         state['img_url'] = args
 
 
-@picture.got('img_url', prompt=random.choice(tu))
+@picture.got('img_url', prompt=f'图呢？让{Bot_NICKNAME}去找空气吗？')
 async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
     img_url = get_message_img(img_url)
     if not img_url:

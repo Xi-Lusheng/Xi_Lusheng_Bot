@@ -1,15 +1,7 @@
 import json
 import time
-from .config import *
 import requests
-
-
-tu = [
-    f'图呢？让{Bot_NICKNAME}去找空气吗？',
-    '虚空识图？来图来图GKD',
-    f'你把图先给{Bot_NICKNAME},不然{Bot_NICKNAME}拿头给你找啊',
-    '来一份涩图，谢谢。。。。唔，不对！不许涩涩！'
-]
+from utils.config import sauce_key, num_res
 
 
 async def get_search_pictures(image: str):
@@ -18,9 +10,9 @@ async def get_search_pictures(image: str):
         data = {
             'url': image,
             'db': '999',
-            'api_key': api_key,
+            'api_key': sauce_key,
             'output_type': 2,
-            'numres': 5
+            'numres': num_res,
         }
 
         resp = requests.get(url, params=data)
@@ -45,7 +37,6 @@ async def get_search_pictures(image: str):
         return data
     except KeyError:
         return '快把图给我交了！'
-
 
 # def get_anime(name):
 #     s_time = time.time()
