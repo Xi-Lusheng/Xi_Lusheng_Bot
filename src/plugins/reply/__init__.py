@@ -1,3 +1,5 @@
+import random
+
 from nonebot.plugin.on import on_message, on_notice, on_regex, on_command
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
@@ -8,7 +10,7 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     PokeNotifyEvent,
 )
-from .utils import *
+from .constant import get_chat_result, get_n, utils_get_chat_result
 from .msg_data import *
 import re
 

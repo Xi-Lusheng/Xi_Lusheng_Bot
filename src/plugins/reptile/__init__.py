@@ -5,7 +5,7 @@ from nonebot.params import CommandArg, ArgPlainText
 from nonebot.plugin.on import on_command
 from utils.config import over_list
 from utils.utils_def import send_forward_msg_group
-from .utils import *
+from .constant import get_sakura
 
 sakura = on_command('动漫', aliases={'樱花'}, priority=5, block=True)
 
