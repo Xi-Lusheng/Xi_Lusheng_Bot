@@ -92,11 +92,8 @@ repeat = on_message(priority=97, block=False)
 @repeat.handle()
 async def repeat_(event: MessageEvent):
     if random.randint(0, 500) == 500:
-        try:
-            msg = str(event.get_message())
-            await repeat.send(Message(msg))
-        except:
-            pass
+        msg = str(event.get_message())
+        await repeat.send(Message(msg))
     else:
         pass
 

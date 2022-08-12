@@ -1,12 +1,12 @@
 import json
+import time
+from .config import *
 import requests
-import nonebot
 
-Bot_NICKNAME: str = list(nonebot.get_driver().config.nickname)[0]
 
 tu = [
     f'图呢？让{Bot_NICKNAME}去找空气吗？',
-    '虚空识番？来图来图GKD',
+    '虚空识图？来图来图GKD',
     f'你把图先给{Bot_NICKNAME},不然{Bot_NICKNAME}拿头给你找啊',
     '来一份涩图，谢谢。。。。唔，不对！不许涩涩！'
 ]
@@ -18,9 +18,9 @@ async def get_search_pictures(image: str):
         data = {
             'url': image,
             'db': '999',
-            'api_key': '330a16afed184b739d4f1e2ce4dc13b8e055a53f',
+            'api_key': api_key,
             'output_type': 2,
-            'numres': 4
+            'numres': 5
         }
 
         resp = requests.get(url, params=data)
@@ -45,3 +45,48 @@ async def get_search_pictures(image: str):
         return data
     except KeyError:
         return '快把图给我交了！'
+
+
+# def get_anime(name):
+#     s_time = time.time()
+#     url = "https://api.trace.moe/search?anilistInfo&url={}".format(name)
+#     anime_json = (requests.get(url)).json()
+#     try:
+#         if not anime_json["error"]:
+#             if anime_json == "Error reading imagenull":
+#                 return "图像源错误，注意必须是静态图片哦"
+#             repass = ""
+#             # 拿到动漫 中文名
+#             for anime in anime_json["result"][:5]:
+#                 synonyms = anime["anilist"]["synonyms"]
+#                 for x in synonyms:
+#                     _count_ch = 0
+#                     for word in x:
+#                         if "\u4e00" <= word <= "\u9fff":
+#                             _count_ch += 1
+#                     if _count_ch > 3:
+#                         anime_name = x
+#                         break
+#                 else:
+#                     anime_name = anime["anilist"]["title"]["native"]
+#                 episode = anime["episode"]
+#                 from_ = int(anime["from"])
+#                 m, s = divmod(from_, 60)
+#                 similarity = anime["similarity"]
+#                 putline = "[ {} ][{}][{}:{}] 相似度:{:.2%}".format(
+#                     Converter("zh-hans").convert(anime_name),
+#                     episode if episode else "?",
+#                     m,
+#                     s,
+#                     similarity,
+#                 )
+#                 repass += putline + "\n"
+#             return f"耗时 {int(time.time() - s_time)} 秒\n" + repass[:-1]
+#         else:
+#             return f'访问错误 error：{anime_json["error"]}'
+#     except Exception as e:
+#         return "发生了奇怪的错误，那就没办法了，再试一次？"
+#
+#
+# get_anime(
+#     'https://gchat.qpic.cn/gchatpic_new/428733650/4185104399-2881036140-AD55C6830BAAAE87B6E8C8C5CF40052D/0?term=3]')

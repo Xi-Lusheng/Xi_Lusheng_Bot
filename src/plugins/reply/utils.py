@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import random
 import requests
+from .config import app_id, user_id
 
 try:
     import ujson as json
@@ -18,7 +19,7 @@ Util_Json = json.load(open(Path(os.path.join(os.path.dirname(
 
 # 从字典里返还消息
 async def get_chat_result(text: str, nickname: str) -> str:
-    if len(text) < 7:
+    if len(text) < 10:
         keys = AnimeThesaurus.keys()
         for key in keys:
             if text.find(key) != -1:
@@ -26,7 +27,7 @@ async def get_chat_result(text: str, nickname: str) -> str:
 
 
 async def utils_get_chat_result(text: str) -> str:
-    if len(text) < 7:
+    if len(text) < 10:
         keys = Util_Json.keys()
         for key in keys:
             if text.find(key) != -1:
@@ -34,16 +35,13 @@ async def utils_get_chat_result(text: str) -> str:
 
 
 # 调用思知机器人
-si_zhi_url = 'https://api.ownthink.com/bot'
-appid = '346f5fd729d98a99aeadea97c9c71966'
-
-
 async def get_n(text):
+    si_zhi_url = 'https://api.ownthink.com/bot'
     try:
         data = {
             "spoken": text,
-            "appid": appid,
-            "userid": "ZubDg1Ad"
+            "appid": app_id,
+            "userid": user_id,
         }
         r = requests.post(si_zhi_url, data=json.dumps(data))
         result = json.loads(r.content)
