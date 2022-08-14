@@ -76,6 +76,7 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             msg = []
             for datas in data:
                 msg.append(Message('动漫名称: {}'.format(MessageSegment.text(datas['anime_name'])) + '\n' +
+                                   MessageSegment.image(datas['image']) + '\n' +
                                    '第 {} 集'.format(MessageSegment.text(datas['episode'])) + '\n' +
                                    '相似度：{} %'.format(MessageSegment.text(datas['similarity']))))
 

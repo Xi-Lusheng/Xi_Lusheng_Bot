@@ -60,10 +60,12 @@ async def get_anime(image):
                     anime_name = anime["anilist"]["title"]["native"]
                 episode = str(anime["episode"])
                 similarity = '{:.2%}'.format(anime["similarity"])
+                image = anime["image"]
                 dic = {
                     'anime_name': anime_name,
                     'episode': episode,
                     'similarity': similarity,
+                    'image': image
                 }
                 data.append(dic)
             return data
