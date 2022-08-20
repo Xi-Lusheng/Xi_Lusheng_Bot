@@ -1,7 +1,10 @@
+from pathlib import Path
 from typing import List, Union
-from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, Bot, Message
+from nonebot import logger
+from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, Bot, Message, MessageSegment
 import ujson as json
 import json
+from path.path_utils import scold_data_path
 
 
 # 消息合并转发
@@ -42,3 +45,28 @@ def get_message_img(data: Union[str, Message]) -> List[str]:
         for seg in data["image"]:
             img_list.append(seg.data["url"])
     return img_list
+
+
+def record(voice_name: str, path: str = None) -> MessageSegment or str:
+    """
+    说明：
+        生成一个 MessageSegment.record 消息
+    参数：
+        :param voice_name: 音频文件名称，默认在 data/scold_data 目录下
+        :param path: 音频文件路径，默认在 data/scold_data 目录下
+    """
+    if len(voice_name.split(".")) == 1:
+        voice_name += ".mp3"
+    file = (
+        Path(scold_data_path) / path / voice_name
+        if path
+        else Path(scold_data_path) / voice_name
+    )
+    if "http" in voice_name:
+        return MessageSegment.record(voice_name)
+    if file.exists():
+        result = MessageSegment.record(f"file:///{file.absolute()}")
+        return result
+    else:
+        logger.warning(f"语音{file.absolute()}缺失...")
+        return ""
