@@ -4,7 +4,7 @@ from nonebot import logger
 from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, Bot, Message, MessageSegment
 import ujson as json
 import json
-from path.path_utils import scold_data_path
+from path.path import scold_data_path
 
 
 # 消息合并转发

@@ -3,7 +3,7 @@ import random
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot import on_keyword
 from nonebot.rule import to_me
-from path.path_utils import scold_data_path
+from path.path import scold_data_path
 from utils.utils_def import record
 
 scold = on_keyword({'骂'}, rule=to_me(), priority=5, block=True)

@@ -1,20 +1,11 @@
-from pathlib import Path
-import os
 import random
 import requests
+from path.path import AnimeThesaurus, Util_Json
 from utils.config import app_id, user_id
-
 try:
     import ujson as json
 except ModuleNotFoundError:
     import json
-
-# 载入词库(这个词库有点涩)
-AnimeThesaurus = json.load(open(Path(os.path.join(os.path.dirname(
-    __file__), "data")) / "data.json", "r", encoding="utf8"))
-
-Util_Json = json.load(open(Path(os.path.join(os.path.dirname(
-    __file__), "data")) / "utils_data.json", "r", encoding="utf8"))
 
 
 # 从字典里返还消息

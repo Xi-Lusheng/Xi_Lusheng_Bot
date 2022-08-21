@@ -11,7 +11,7 @@ from nonebot.adapters.onebot.v11 import (
     PokeNotifyEvent,
 )
 from .constant import get_chat_result, get_n, utils_get_chat_result
-from .msg_data import *
+from data.reply_data.msg_data import *
 import re
 
 ai = on_message(rule=to_me(), priority=98, block=True)
