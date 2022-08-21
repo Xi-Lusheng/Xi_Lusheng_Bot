@@ -19,7 +19,8 @@ plugins = [
     "nonebot_plugin_repeater",
     "nonebot_plugin_remake",
     "nonebot_plugin_baidutranslate",
-    "nonebot_plugin_abstract"
+    "nonebot_plugin_abstract",
+    "nonebot_plugin_crazy_thursday"
 ]
 plugin_dirs = ["src/plugins"]
 
