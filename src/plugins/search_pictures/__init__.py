@@ -35,7 +35,7 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
                                    '\n' +
                                    MessageSegment.image(datas['image']) +
                                    '\n' +
-                                   '相似度：{} %'.format(
+                                   '相似度：{} '.format(
                                        MessageSegment.text(datas['similarity'])) +
                                    '\n' +
                                    '图片来源' +
