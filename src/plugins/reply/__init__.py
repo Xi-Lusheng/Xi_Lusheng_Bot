@@ -1,5 +1,4 @@
 import random
-
 from nonebot.plugin.on import on_message, on_notice, on_regex, on_command
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
@@ -15,8 +14,6 @@ from data.reply_data.msg_data import *
 import re
 
 ai = on_message(rule=to_me(), priority=98, block=True)
-
-poke_ = on_notice(rule=to_me(), block=False)
 
 
 # @对话
@@ -52,6 +49,9 @@ async def _(event: MessageEvent):
     await ai.finish(Message(result))
 
 
+poke_ = on_notice(rule=to_me(), block=False)
+
+
 @poke_.handle()
 async def _poke_event(event: PokeNotifyEvent):
     if event.is_tome:
@@ -67,10 +67,10 @@ async def util_msg_(event: MessageEvent):
     msg = str(event.get_message())
     msg = re.sub(r"\[.*?\]", "", msg)
     result = await utils_get_chat_result(msg)
-    if result is None:
-        pass
-    else:
+    if result:
         await util_msg.finish(Message(result))
+    else:
+        pass
 
 
 _2d = on_command('二次元浓度', priority=5, block=True)
@@ -122,5 +122,3 @@ wu = on_regex('^呜{1,4}$', priority=5, block=True)
 @wu.handle()
 async def wu_():
     await wu.send(Message(random.choice(wu_wu)))
-
-

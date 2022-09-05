@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 
 # 从字典里返还消息
 async def get_chat_result(text: str, nickname: str) -> str:
-    if len(text) < 10:
+    if len(text) < 20:
         keys = AnimeThesaurus.keys()
         for key in keys:
             if text.find(key) != -1:
@@ -18,7 +18,7 @@ async def get_chat_result(text: str, nickname: str) -> str:
 
 
 async def utils_get_chat_result(text: str) -> str:
-    if len(text) < 10:
+    if len(text) < 20:
         keys = Util_Json.keys()
         for key in keys:
             if text.find(key) != -1:

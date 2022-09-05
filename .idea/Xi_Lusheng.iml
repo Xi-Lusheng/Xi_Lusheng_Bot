@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/accounts" />
       <excludeFolder url="file://$MODULE_DIR$/.bot" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (.bot)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
