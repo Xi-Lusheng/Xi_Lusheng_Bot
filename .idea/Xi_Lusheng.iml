@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.bot" />
       <excludeFolder url="file://$MODULE_DIR$/.nonebot" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot) " jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
