@@ -44,11 +44,11 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             try:
                 await send_forward_msg_group(bot, event, name='初号姬', msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
             except:
-                await picture.send('搜图插件出现错误，请尽快练习联系汐鹿生修复')
+                await picture.send('识番插件出现错误或者账号可能被风控，请尽快练习联系汐鹿生修复')
     except TypeError or KeyError:
         await picture.send(f'{Bot_NICKNAME}今天找图找累了，明天再来吧')
     except:
-        await anime.send('搜图插件出现错误，请尽快练习联系汐鹿生修复')
+        await picture.send('识图图插件出现错误或者账号可能被风控，请尽快练习联系汐鹿生修复')
 
 
 anime = on_command('识番', priority=5, block=True)
@@ -83,8 +83,8 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             try:
                 await send_forward_msg_group(bot, event, name='初号姬', msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
             except:
-                await anime.send('搜图插件出现错误，请尽快练习联系汐鹿生修复')
+                await anime.send('识番插件出现错误或者账号可能被风控，请尽快练习联系汐鹿生修复')
     except TypeError or KeyError:
         await anime.send(f'{Bot_NICKNAME}这个月找番找累了，下个月再来吧')
     except:
-        await anime.send('搜图插件出现错误，请尽快练习联系汐鹿生修复')
+        await anime.send('识番插件出现错误或者账号可能被风控，请尽快练习联系汐鹿生修复')
