@@ -65,12 +65,15 @@ util_msg = on_message(priority=99, block=True)
 @util_msg.handle()
 async def util_msg_(event: MessageEvent):
     msg = str(event.get_message())
-    msg = re.sub(r"\[.*?\]", "", msg)
-    result = await utils_get_chat_result(msg)
-    if result:
-        await util_msg.finish(Message(result))
-    else:
+    if msg[0] == '/':
         pass
+    else:
+        msg = re.sub(r"\[.*?\]", "", msg)
+        result = await utils_get_chat_result(msg)
+        if result:
+            await util_msg.finish(Message(result))
+        else:
+            pass
 
 
 _2d = on_command('二次元浓度', priority=5, block=True)
