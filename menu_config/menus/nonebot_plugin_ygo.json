@@ -1,0 +1,14 @@
+{
+    "name": "ygo查卡",
+    "description": "查看游戏王卡片",
+    "usage": "ygo",
+    "funcs": [
+        {
+            "func": "ygo查卡",
+            "trigger_method": "on_re",
+            "trigger_condition": "ygo 卡名",
+            "brief_des": "查找指定卡片信息",
+            "detail_des": "查找指定卡片信息"
+        }
+    ]
+}

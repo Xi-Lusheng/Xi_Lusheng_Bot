@@ -22,7 +22,8 @@ plugins = [
     "nonebot_plugin_abstract",
     "nonebot_plugin_crazy_thursday",
     "nonebot_plugin_gspanel",
-    "nonebot_plugin_gsmaterial"
+    "nonebot_plugin_gsmaterial",
+    "nonebot_plugin_PicMenu"
 ]
 plugin_dirs = ["src/plugins"]
 

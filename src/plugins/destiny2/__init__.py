@@ -1,9 +1,27 @@
 from nonebot import on_command
 from nonebot.params import CommandArg
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, Bot, Message
-
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
 import urllib3
 import json
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
+    name='d2',
+    description='暂时维护中，勿用',
+    usage='/',
+    extra={
+        'menu_data': [
+            {
+                'func': '日报',
+                'trigger_method': 'on_cmd',
+                'trigger_condition': '/日报',
+                'brief_des': '查看d2日报命令',
+                'detail_des': '暂时维护中，勿用'
+            },
+        ],
+        'menu_template': 'default'
+    }
+)
 
 today = on_command("today", aliases={'日报', }, priority=5)
 

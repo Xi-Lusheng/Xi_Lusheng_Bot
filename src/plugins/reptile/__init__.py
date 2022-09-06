@@ -6,6 +6,25 @@ from nonebot.plugin.on import on_command
 from utils.config import over_list
 from utils.utils_def import send_forward_msg_group
 from .constant import get_sakura
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
+    name='樱花',
+    description='爬取樱花链接，直达播放界面',
+    usage='/',
+    extra={
+        'menu_data': [
+            {
+                'func': '在樱花搜番',
+                'trigger_method': 'on_cmd',
+                'trigger_condition': '/樱花 或 /动漫',
+                'brief_des': '输入想看的番剧，返回番剧播放链接',
+                'detail_des': '输入想看的番剧，返回番剧播放链接'
+            },
+        ],
+        'menu_template': 'default'
+    }
+)
 
 sakura = on_command('动漫', aliases={'樱花'}, priority=5, block=True)
 

@@ -6,6 +6,36 @@ from nonebot.typing import T_State
 from utils.config import Bot_NICKNAME
 from utils.utils_def import send_forward_msg_group, get_message_img
 from .constant import get_search_pictures, get_anime
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
+    name='识图',
+    description='查找图片的原画或者动漫出处',
+    usage='/',
+    extra={
+        'menu_data': [
+            {
+                'func': '查找原画',
+                'trigger_method': 'on_cmd',
+                'trigger_condition': '/识图 图片',
+                'brief_des': '发送图片寻找图片出处\n'
+                             '（每天只能使用100次，否则会罢工）',
+                'detail_des': '发送图片寻找图片出处\n'
+                              '（每天只能使用100次，否则会罢工）'
+            },
+            {
+                'func': '查找动漫',
+                'trigger_method': 'on_cmd',
+                'trigger_condition': '/识番 图片',
+                'brief_des': '发送图片寻找番剧出处\n'
+                             '（每月只能使用1000次，否则会罢工）',
+                'detail_des': '发送图片寻找图片出处\n'
+                              '（每月只能使用1000次，否则会罢工）'
+            },
+        ],
+        'menu_template': 'default'
+    }
+)
 
 picture = on_command('识图', priority=5, block=True)
 

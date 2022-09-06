@@ -12,6 +12,13 @@ from nonebot.adapters.onebot.v11 import (
 from .constant import get_chat_result, get_n, utils_get_chat_result
 from data.reply_data.msg_data import *
 import re
+from nonebot.plugin import PluginMetadata
+
+__plugin_meta__ = PluginMetadata(
+    name='AI聊天',
+    description='人工智能（智障）聊天',
+    usage='@我 聊天内容',
+)
 
 ai = on_message(rule=to_me(), priority=98, block=True)
 

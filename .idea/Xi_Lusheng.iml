@@ -5,6 +5,10 @@
       <excludeFolder url="file://$MODULE_DIR$/accounts" />
       <excludeFolder url="file://$MODULE_DIR$/.bot" />
       <excludeFolder url="file://$MODULE_DIR$/.nonebot" />
+      <excludeFolder url="file://$MODULE_DIR$/data/gspanel/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/menu_config" />
+      <excludeFolder url="file://$MODULE_DIR$/data/gsmaterial" />
+      <excludeFolder url="file://$MODULE_DIR$/data/gspanel" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

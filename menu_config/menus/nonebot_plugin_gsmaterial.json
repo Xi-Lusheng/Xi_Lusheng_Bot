@@ -1,0 +1,21 @@
+{
+    "name": "原神面板",
+    "description": "插件测试中，勿用",
+    "usage": "/",
+    "funcs": [
+        {
+            "func": "原神账号绑定",
+            "trigger_method": "on_msg",
+            "trigger_condition": "/面板绑定 原神ID",
+            "brief_des": "绑定原神账号",
+            "detail_des": "绑定原神账号"
+        },
+        {
+            "func": "原神角色面板",
+            "trigger_method": "on_msg",
+            "trigger_condition": "/面板 角色",
+            "brief_des": "查看绑定账号角色面板",
+            "detail_des": "查看绑定账号角色面板"
+        }
+    ]
+}
