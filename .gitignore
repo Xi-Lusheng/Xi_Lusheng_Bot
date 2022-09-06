@@ -142,3 +142,4 @@ dmypy.json
 /accounts/
 /data/gsmaterial/
 /data/gspanel/
+/menu_config/config.json
