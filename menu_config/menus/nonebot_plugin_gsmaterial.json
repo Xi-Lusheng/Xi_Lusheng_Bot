@@ -14,8 +14,8 @@
             "func": "原神角色面板",
             "trigger_method": "on_msg",
             "trigger_condition": "/面板 角色",
-            "brief_des": "查看绑定账号角色面板",
-            "detail_des": "查看绑定账号角色面板"
+            "brief_des": "查看绑定账号角色面板，可在角色后加他人ID查看他人面板",
+            "detail_des": "查看绑定账号角色面板，可在角色后加他人ID查看他人面板"
         }
     ]
 }
