@@ -1,6 +1,6 @@
 {
     "name": "原神每日材料",
-    "description": "生成疯狂星期四文案",
+    "description": "查找角色天赋和武器突破材料",
     "usage": "/",
     "funcs": [
         {
