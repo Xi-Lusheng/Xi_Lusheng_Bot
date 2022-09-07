@@ -8,6 +8,8 @@
       <excludeFolder url="file://$MODULE_DIR$/data/gspanel/cache" />
       <excludeFolder url="file://$MODULE_DIR$/data/gsmaterial" />
       <excludeFolder url="file://$MODULE_DIR$/data/gspanel" />
+      <excludeFolder url="file://$MODULE_DIR$/loliconImages" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

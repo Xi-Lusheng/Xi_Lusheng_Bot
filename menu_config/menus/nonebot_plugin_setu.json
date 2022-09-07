@@ -1,0 +1,21 @@
+{
+    "name": "涩图",
+    "description": "随机发送涩图",
+    "usage": "",
+    "funcs": [
+        {
+            "func": "涩图",
+            "trigger_method": "on_re",
+            "trigger_condition": "涩图、setu、无内鬼、色图",
+            "brief_des": "随机发送涩图",
+            "detail_des": "随机发送涩图"
+        },
+        {
+            "func": "涩图tga",
+            "trigger_method": "on_re",
+            "trigger_condition": "涩图tagA和B和C（最多指定三个tag）",
+            "brief_des": "获取tag指定的内容涩图（仅限主人开启在线可用）",
+            "detail_des": "获取tag指定的内容涩图（仅限主人开启在线可用）"
+        }
+    ]
+}
