@@ -10,6 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/data/gspanel" />
       <excludeFolder url="file://$MODULE_DIR$/loliconImages" />
       <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/menu_config/fonts" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (.nonebot)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
