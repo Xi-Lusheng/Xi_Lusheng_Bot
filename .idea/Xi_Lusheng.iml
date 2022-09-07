@@ -6,7 +6,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.bot" />
       <excludeFolder url="file://$MODULE_DIR$/.nonebot" />
       <excludeFolder url="file://$MODULE_DIR$/data/gspanel/cache" />
-      <excludeFolder url="file://$MODULE_DIR$/menu_config" />
       <excludeFolder url="file://$MODULE_DIR$/data/gsmaterial" />
       <excludeFolder url="file://$MODULE_DIR$/data/gspanel" />
     </content>
