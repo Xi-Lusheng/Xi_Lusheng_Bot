@@ -1,0 +1,14 @@
+{
+    "name": "百度翻译",
+    "description": "使用百度翻译语言",
+    "usage": "x番x",
+    "funcs": [
+        {
+            "func": "百度翻译",
+            "trigger_method": "on_re",
+            "trigger_condition": "x翻x 翻译内容",
+            "brief_des": "输入x自动判断语种,也可将x替换为想要翻译的语种 如：中翻英",
+            "detail_des": "输入x自动判断语种,也可将x替换为想要翻译的语种 如：中翻英"
+        }
+    ]
+}
