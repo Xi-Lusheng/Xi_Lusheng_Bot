@@ -109,6 +109,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.env
 .env.prod
 .venv
 env/
@@ -146,3 +147,6 @@ dmypy.json
 /loliconImages/
 /data/lolicon.db
 /data/setu_config.json
+/docker-compose.yml
+/Dockerfile
+/test.py
