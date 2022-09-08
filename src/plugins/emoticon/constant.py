@@ -4,7 +4,7 @@ import os
 
 
 async def get_emo(msg: str) -> MessageSegment or str:
-    if len(msg) < 30:
+    if len(msg) < 20:
         names = os.listdir(emo_data_path)
         for i in names:
             name = i.split('.')[0]
