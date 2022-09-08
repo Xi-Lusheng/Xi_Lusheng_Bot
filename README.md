@@ -37,7 +37,7 @@
 pip install -r requirements.txt
 ```
 
-**修改机器人配置，打开 .env.prod 文件**
+**修改机器人配置，打开 .env.dev 文件**
 
 ```
 # 配置 NoneBot 超级用户
@@ -82,4 +82,12 @@ nb run
 详细参考 [nonebot_plugin_gocqhttp](https://github.com/mnixry/nonebot-plugin-gocqhttp) 配置
 
 配置完成后重新启动机器人即可
+
+## 写在最后
+
+本项目是自己娱乐所用同时从中学习，我自己也才学Python不久，希望有大佬能指点我项目不足的地方
+
+我不能保证我写的代码一点问题都没有，所以如果有代码问题还请在issue处告诉我
+
+后续自己还好更新其它更多的功能，敬请期待吧
 
