@@ -30,5 +30,6 @@ async def _(bot: Bot, event: Event):
                        '此项目基于 Nonebot2 和 go-cqhttp 开发Q群机器人\n'
                        '实现了一些对群友的娱乐功能和实用功能（大概）\n'
                        '======================\n'
-                       '项目地址：https://gitee.com/xi-lusheng/nonebot2\n'
+                       'Gitee项目地址：https://gitee.com/xi-lusheng/nonebot2\n'
+                       'Github项目地址：https://github.com/XiLushengs/Xi_Lusheng_Bot\n'
                        'nonebot官方文档地址：https://v2.nonebot.dev/')
