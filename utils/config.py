@@ -2,7 +2,7 @@ from nonebot import get_driver, logger
 import nonebot
 
 Bot_NICKNAME: str = list(nonebot.get_driver().config.nickname)[0]
-Bot_MASTER: str = list(nonebot.get_driver().config.superusers)[0]
+Bot_MASTER: str = list(nonebot.get_driver().config.master)[0]
 
 config = get_driver().config.dict()
 
