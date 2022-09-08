@@ -3,7 +3,7 @@ from nonebot.adapters.onebot.v11 import Message, MessageSegment, Bot, MessageEve
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg, ArgPlainText
 from nonebot.plugin.on import on_command
-from utils.config import over_list
+from utils.config import over_list, Bot_NICKNAME
 from utils.utils_def import send_forward_msg_group
 from .constant import get_sakura
 from nonebot.plugin import PluginMetadata
@@ -47,7 +47,10 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
                    MessageSegment.text(result['url']))
     try:
         if msg:
-            await send_forward_msg_group(bot, event, name="初号姬", msgs=msg)
+            await send_forward_msg_group(bot,
+                                         event,
+                                         name=f"{Bot_NICKNAME}",
+                                         msgs=msg)
         else:
             time.sleep(1)
             await sakura.send('第一次查找失败，将进行模糊查找')
@@ -57,6 +60,10 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
                 msg.append(MessageSegment.text(result['name']) + '\n' +
                            MessageSegment.image(result['img']) + '\n' +
                            MessageSegment.text(result['url']))
-            await send_forward_msg_group(bot, event, name="初号姬", msgs=msg if msg else ["没有在樱花找到这个动漫呢，换词姿势搜索试试"])
+            await send_forward_msg_group(
+                bot,
+                event,
+                name=f"{Bot_NICKNAME}",
+                msgs=msg if msg else ["没有在樱花找到这个动漫呢，换词姿势搜索试试"])
     except:
-        await sakura.send('找番插件错误，请尽快联系汐鹿生修复')
+        await sakura.send('找樱花件错误，请尽快联系汐鹿生修复')

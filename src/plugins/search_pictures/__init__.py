@@ -73,7 +73,10 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
                                    '\n' +
                                    MessageSegment.text(datas['url'])))
             try:
-                await send_forward_msg_group(bot, event, name='初号姬', msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
+                await send_forward_msg_group(bot,
+                                             event,
+                                             name=f'{Bot_NICKNAME}',
+                                             msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
             except Exception as e:
                 logger.error(f'机器人被风控了{e}')
                 await picture.finish(f'{Bot_NICKNAME}可能被企鹅风控了')
@@ -115,7 +118,10 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
                                    '相似度：{} %'.format(MessageSegment.text(datas['similarity']))))
 
             try:
-                await send_forward_msg_group(bot, event, name='初号姬', msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
+                await send_forward_msg_group(bot,
+                                             event,
+                                             name=f'{Bot_NICKNAME}',
+                                             msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
             except Exception as e:
                 logger.error(f'机器人被风控了{e}')
                 await anime.finish(f'{Bot_NICKNAME}可能被企鹅风控了')
