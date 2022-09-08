@@ -56,6 +56,12 @@ COMMAND_START=["/"]
 COMMAND_SEP=["."]
 ```
 
+**打开.env文件，将 `ENVIRONMENT` 修改**
+
+```
+ENVIRONMENT=dev
+```
+
 详细配置请阅读 [nonebot](https://v2.nonebot.dev/) 官方文档
 
 其它配置已在文件中使用注释表明，请自行配置
