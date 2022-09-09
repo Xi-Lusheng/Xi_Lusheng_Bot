@@ -1,7 +1,8 @@
 import random
 import requests
 from path.path import AnimeThesaurus, Util_Json
-from utils.config import app_id, user_id
+from utils.config import app_id, user_id, Bot_NICKNAME
+
 try:
     import ujson as json
 except ModuleNotFoundError:
@@ -26,7 +27,7 @@ async def utils_get_chat_result(text: str) -> str:
 
 
 # 调用思知机器人
-async def get_n(text):
+async def get_n(text: str) -> str:
     si_zhi_url = 'https://api.ownthink.com/bot'
     try:
         data = {
@@ -36,7 +37,7 @@ async def get_n(text):
         }
         r = requests.post(si_zhi_url, data=json.dumps(data))
         result = json.loads(r.content)
-        message = result['data']['info']['text']
+        message = (result['data']['info']['text']).replace('小思', Bot_NICKNAME)
         return message
     except KeyError:
         return '这个问题好头疼呀，问点别的叭'

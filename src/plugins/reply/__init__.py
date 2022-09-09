@@ -51,7 +51,7 @@ async def _(event: MessageEvent):
     result = await get_chat_result(msg, nickname)
     # 如果词库没有结果，则调用思知获取智能回复
     if result is None:
-        message = await get_n(str(msg))
+        message = await get_n(msg)
         await ai.finish(message=message)
     await ai.finish(Message(result))
 
