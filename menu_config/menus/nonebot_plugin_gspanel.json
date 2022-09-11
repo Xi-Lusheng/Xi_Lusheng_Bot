@@ -11,6 +11,13 @@
             "detail_des": "查找今日角色天赋和武器突破材料"
         },
         {
+            "func": "周本材料",
+            "trigger_method": "on_msg",
+            "trigger_condition": "/周本",
+            "brief_des": "查找周本角色天赋材料",
+            "detail_des": "查找周本角色天赋材料"
+        },
+        {
             "func": "开启订阅",
             "trigger_method": "on_msg",
             "trigger_condition": "/原神材料 订阅",

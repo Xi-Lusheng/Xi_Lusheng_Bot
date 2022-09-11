@@ -66,4 +66,4 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
                 name=f"{Bot_NICKNAME}",
                 msgs=msg if msg else ["没有在樱花找到这个动漫呢，换词姿势搜索试试"])
     except:
-        await sakura.send('找樱花件错误，请尽快联系汐鹿生修复')
+        await sakura.send('樱花插件错误，请尽快联系汐鹿生修复')
