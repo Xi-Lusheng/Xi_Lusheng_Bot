@@ -9,7 +9,7 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     PokeNotifyEvent,
 )
-from .constant import get_chat_result, get_n, utils_get_chat_result
+from .constant import get_chat_result, get_message, utils_get_chat_result
 from data.reply_data.msg_data import *
 import re
 from nonebot.plugin import PluginMetadata
@@ -49,9 +49,9 @@ async def _(event: MessageEvent):
         nickname = event.sender.nickname
     # 从字典里获取结果
     result = await get_chat_result(msg, nickname)
-    # 如果词库没有结果，则调用思知获取智能回复
+    # 如果词库没有结果，则调用青云客获取智能回复
     if result is None:
-        message = await get_n(msg)
+        message = await get_message(msg)
         await ai.finish(message=message)
     await ai.finish(Message(result))
 

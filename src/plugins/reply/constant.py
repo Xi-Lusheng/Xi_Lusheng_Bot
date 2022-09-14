@@ -1,7 +1,7 @@
 import random
 import requests
 from path.path import AnimeThesaurus, Util_Json
-from utils.config import app_id, user_id, Bot_NICKNAME
+from utils.config import Bot_MASTER, Bot_NICKNAME
 
 try:
     import ujson as json
@@ -15,7 +15,7 @@ async def get_chat_result(text: str, nickname: str) -> str:
         keys = AnimeThesaurus.keys()
         for key in keys:
             if text.find(key) != -1:
-                return random.choice(AnimeThesaurus[key]).replace("你", nickname)
+                return random.choice(AnimeThesaurus[key]).replace("你", nickname).replace("Bot_MASTER", Bot_MASTER)
 
 
 async def utils_get_chat_result(text: str) -> str:
@@ -26,18 +26,18 @@ async def utils_get_chat_result(text: str) -> str:
                 return random.choice(Util_Json[key])
 
 
-# 调用思知机器人
-async def get_n(text: str) -> str:
-    si_zhi_url = 'https://api.ownthink.com/bot'
+# 调用青云客机器人
+async def get_message(text: str) -> str:
     try:
+        url = 'http://api.qingyunke.com/api.php'
         data = {
-            "spoken": text,
-            "appid": app_id,
-            "userid": user_id,
+            'key': 'free',
+            'appid': 0,
+            'msg': text
         }
-        r = requests.post(si_zhi_url, data=json.dumps(data))
+        r = requests.get(url, params=data)
         result = json.loads(r.content)
-        message = (result['data']['info']['text']).replace('小思', Bot_NICKNAME)
+        message = (result['content']).replace('菲菲', Bot_NICKNAME)
         return message
     except KeyError:
         return '这个问题好头疼呀，问点别的叭'
