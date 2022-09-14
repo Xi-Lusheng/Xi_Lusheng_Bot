@@ -70,3 +70,15 @@ def record(voice_name: str, path: str = None) -> MessageSegment or str:
     else:
         logger.warning(f"语音{file.absolute()}缺失...")
         return ""
+
+
+def face(id_: int) -> MessageSegment:
+    """
+    说明:
+        生成一个 MessageSegment.face 消息
+    参数:
+        :param id_: 表情id
+    """
+    return MessageSegment.face(id_)
+
+

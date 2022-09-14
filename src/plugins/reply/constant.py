@@ -1,7 +1,10 @@
 import random
+import re
+
 import requests
 from path.path import AnimeThesaurus, Util_Json
 from utils.config import Bot_MASTER, Bot_NICKNAME
+from utils.utils_def import face
 
 try:
     import ujson as json
@@ -37,7 +40,25 @@ async def get_message(text: str) -> str:
         }
         r = requests.get(url, params=data)
         result = json.loads(r.content)
-        message = (result['content']).replace('菲菲', Bot_NICKNAME)
-        return message
+        if result["result"] == 0:
+            message = result["content"]
+            if "菲菲" in message:
+                message = message.replace("菲菲", Bot_NICKNAME)
+            if "艳儿" in message:
+                message = message.replace("艳儿", Bot_NICKNAME)
+            if "公众号" in message:
+                message = ""
+            if "{br}" in message:
+                message = message.replace("{br}", "\n")
+            while True:
+                r = re.search("{face:(.*)}", message)
+                if r:
+                    id_ = r.group(1)
+                    message = message.replace(
+                        "{" + f"face:{id_}" + "}", str(face(int(id_)))
+                    )
+                else:
+                    break
+            return message
     except KeyError:
         return '这个问题好头疼呀，问点别的叭'
