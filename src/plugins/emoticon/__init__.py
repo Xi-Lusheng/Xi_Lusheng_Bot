@@ -1,5 +1,4 @@
 import re
-import random
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot import on_message
 from .constant import get_emo
