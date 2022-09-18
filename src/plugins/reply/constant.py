@@ -40,8 +40,8 @@ async def get_message(text: str) -> str:
         }
         r = requests.get(url, params=data)
         result = json.loads(r.content)
+        message = result["content"]
         if result["result"] == 0:
-            message = result["content"]
             if "菲菲" in message:
                 message = message.replace("菲菲", Bot_NICKNAME)
             if "艳儿" in message:
@@ -59,6 +59,6 @@ async def get_message(text: str) -> str:
                     )
                 else:
                     break
-            return message
+        return message
     except KeyError:
         return '这个问题好头疼呀，问点别的叭'
