@@ -54,9 +54,7 @@ async def get_message(text: str) -> str:
                 r = re.search("{face:(.*)}", message)
                 if r:
                     id_ = r.group(1)
-                    message = message.replace(
-                        "{" + f"face:{id_}" + "}", str(face(int(id_)))
-                    )
+                    message = message.replace("{" + f"face:{id_}" + "}", "")
                 else:
                     break
         return message

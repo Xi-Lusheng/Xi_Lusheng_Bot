@@ -13,7 +13,7 @@ async def emo_(event: MessageEvent):
     msg = re.sub(r"\[.*?\]", "", msg)
     emo_path = await get_emo(msg)
     if emo_path:
-        await emo.send(emo_path)
+        await emo.finish(emo_path)
     else:
         pass
 

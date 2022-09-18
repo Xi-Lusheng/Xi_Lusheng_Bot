@@ -15,7 +15,7 @@ async def scold_(event: MessageEvent):
         voice = random.choice(os.listdir(ding_gong_path))
         result = record(voice, 'ding_gong')
         await scold.send(result)
-        await scold.send(voice.split("_")[1])
+        await scold.finish(voice.split("_")[1])
 
 sakana = on_regex('sakana', rule=to_me(), priority=5, block=True)
 
@@ -24,4 +24,4 @@ sakana = on_regex('sakana', rule=to_me(), priority=5, block=True)
 async def sakana_(event: MessageEvent):
     if len(str((event.get_message()))) > 1:
         result = record('sakana.mp3', 'comic_voice')
-        await sakana.send(result)
+        await sakana.finish(result)
