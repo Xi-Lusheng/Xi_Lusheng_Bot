@@ -3,7 +3,8 @@ import nonebot
 
 Bot_NICKNAME: str = list(nonebot.get_driver().config.nickname)[0]
 Bot_MASTER: str = list(nonebot.get_driver().config.master)[0]
-BOT_ID: int = nonebot.get_driver().config.bot_id
+Bot_ID: int = list(nonebot.get_driver().config.bot_id)[0]
+COMMAND_START: str = list(nonebot.get_driver().config.command_start)[0]
 
 config = get_driver().config.dict()
 
