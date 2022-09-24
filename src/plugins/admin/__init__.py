@@ -13,6 +13,8 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
     at = re.search(r"\[CQ:at,qq=(\d*)]", event.raw_message)
     if r and at:
         group_id = event.group_id
+        print(group_id)
+        print(at.group(1))
         user_role = (await bot.get_group_member_info(
             group_id=group_id,
             user_id=int(at.group(1)),
@@ -24,8 +26,8 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
         if bot_role == 'owner':
             await bot.delete_msg(message_id=int(r.group(1)))
         elif bot_role == 'admin':
-            if user_role == bot_role:
-                await withdraw.finish(f'{Bot_NICKNAME}没有权限撤回管理员消息哦')
+            if user_role == bot_role and at.group(1) != Bot_ID or user_role == 'owner':
+                await withdraw.finish(f'{Bot_NICKNAME}没有足够的权限撤回ta的消息哦')
             else:
                 await bot.delete_msg(message_id=int(r.group(1)))
         else:
