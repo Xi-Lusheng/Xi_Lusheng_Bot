@@ -13,8 +13,6 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
     at = re.search(r"\[CQ:at,qq=(\d*)]", event.raw_message)
     if r and at:
         group_id = event.group_id
-        print(group_id)
-        print(at.group(1))
         user_role = (await bot.get_group_member_info(
             group_id=group_id,
             user_id=int(at.group(1)),
