@@ -21,6 +21,13 @@ __plugin_meta__ = PluginMetadata(
                 'brief_des': '撤回消息',
                 'detail_des': '撤回消息'
             },
+            {
+                'func': '全体禁言',
+                'trigger_method': 'on_re',
+                'trigger_condition': '/全体禁言 /关闭全体禁言',
+                'brief_des': '打开或者关闭全体禁言',
+                'detail_des': '打开或者关闭全体禁言'
+            },
         ],
         'menu_template': 'default'
     }
