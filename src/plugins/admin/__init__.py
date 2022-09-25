@@ -59,12 +59,11 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
         else:
             await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
 
-taboo_all = on_regex(f'(^{COMMAND_START}全体禁言$|^{COMMAND_START}关闭全体禁言$)', priority=5, block=True, permission=SUPERUSER)
+taboo_all = on_regex(f'(^{COMMAND_START}全体禁言$|^{COMMAND_START}关闭全体禁言$)', priority=5, block=True)
 
 
 @taboo_all.handle()
 async def taboo_all_(bot: Bot, event: GroupMessageEvent):
-    print(event.get_plaintext())
     if await admin_permission(bot, event):
         enable = None
         if event.get_plaintext() == '/全体禁言':
