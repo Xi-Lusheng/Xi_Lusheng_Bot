@@ -93,14 +93,14 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
             user_role = await get_group_role(bot, event, at_id)
             bot_role = await get_group_role(bot, event, Bot_ID)
             if bot_role == 'owner':
-                await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd.group(1))
+                await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd)
             elif bot_role == 'admin':
                 if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
                     await taboo.finish(f'{Bot_NICKNAME}没有足够的权限禁言ta哦')
                 elif at_id == Bot_ID:
                     await taboo.finish('你是猪比吗，你见过谁能自己禁言自己', at_sender=True)
                 else:
-                    await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd.group(1))
+                    await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd)
             else:
                 await taboo.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
     else:
