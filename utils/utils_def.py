@@ -5,6 +5,7 @@ from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, Bot, Me
 import ujson as json
 import json
 from path.path import scold_data_path
+import re
 
 
 # 消息合并转发
@@ -81,4 +82,41 @@ def face(id_: int) -> MessageSegment:
     """
     return MessageSegment.face(id_)
 
+
+class GetRe:
+    """
+    正则匹配消息
+    """
+    def __init__(self, raw_message):
+        self._raw_message = raw_message
+        self._get_msg_id = re.compile(r"\[CQ:reply,id=(-?\d*)]")
+        self._get_at_id = re.compile(r"\[CQ:at,qq=(\d*)]")
+        self._get_cd = re.compile(r"cd(\d*)")
+
+    def get_msg_id(self):
+        """
+        获取消息id
+
+        :return: re变量，使用group获取
+        """
+        msg_id = self._get_msg_id.search(self._raw_message)
+        return msg_id
+
+    def get_at_id(self):
+        """
+        获取@人qq号
+
+        :return: re变量，使用group获取
+        """
+        at_id = self._get_at_id.search(self._raw_message)
+        return at_id
+
+    def get_cd(self):
+        """
+        获取消息中的cd时间
+
+        :return: re变量，使用group获取
+        """
+        cd = self._get_cd.search(self._raw_message)
+        return cd
 

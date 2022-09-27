@@ -17,7 +17,7 @@ async def admin_permission(bot: Bot, event: GroupMessageEvent) -> bool:
         return True
 
 
-async def get_group_role(bot: Bot, event: GroupMessageEvent, user_id: str) -> str:
+async def get_group_role(bot: Bot, event: GroupMessageEvent, user_id: int) -> str:
     """
     输出对象在群组中的权限
 

@@ -4,6 +4,7 @@ import re
 from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START
 from utils.permission import admin_permission, get_group_role
 from nonebot.plugin import PluginMetadata
+from utils.utils_def import GetRe
 
 __plugin_meta__ = PluginMetadata(
     name='管理员插件',
@@ -36,24 +37,27 @@ __plugin_meta__ = PluginMetadata(
         'menu_template': 'default'
     }
 )
+
+
 withdraw = on_regex(f"({COMMAND_START}撤回)", priority=5, block=True)
 
 
 @withdraw.handle()
 async def withdraw_(bot: Bot, event: GroupMessageEvent):
-    r = re.search(r"\[CQ:reply,id=(-?\d*)]", str(event.raw_message))
-    at = re.search(r"\[CQ:at,qq=(\d*)]", str(event.raw_message))
-    if r and at:
-        user_role = await get_group_role(bot, event, at.group(1))
+    get_re = GetRe(event.raw_message)
+    msg_id = (get_re.get_msg_id()).group(1)
+    at_id = (get_re.get_at_id()).group(1)
+    if msg_id and at_id:
+        user_role = await get_group_role(bot, event, at_id)
         bot_role = await get_group_role(bot, event, Bot_ID)
         if bot_role == 'owner':
-            await bot.delete_msg(message_id=int(r.group(1)))
+            await bot.delete_msg(message_id=msg_id)
             await withdraw.finish('已撤回')
         elif bot_role == 'admin':
-            if user_role == bot_role and at.group(1) != Bot_ID or user_role == 'owner':
+            if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
                 await withdraw.finish(f'{Bot_NICKNAME}没有足够的权限撤回ta的消息哦')
             else:
-                await bot.delete_msg(message_id=int(r.group(1)))
+                await bot.delete_msg(message_id=msg_id)
                 await withdraw.finish('已撤回')
         else:
             await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
@@ -83,20 +87,21 @@ taboo = on_regex(r'^禁言\s*\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*cd\d*$|^\[CQ:at,qq=
 @taboo.handle()
 async def taboo_(bot: Bot, event: GroupMessageEvent):
     if await admin_permission(bot, event):
-        at = re.search(r"\[CQ:at,qq=(\d*)]", str(event.raw_message))
-        cd = re.search(r"cd(\d*)", str(event.raw_message))
-        if at and cd:
-            user_role = await get_group_role(bot, event, at.group(1))
+        get_re = GetRe(event.raw_message)
+        at_id = (get_re.get_at_id()).group(1)
+        cd = (get_re.get_cd()).group(1)
+        if at_id and cd:
+            user_role = await get_group_role(bot, event, at_id)
             bot_role = await get_group_role(bot, event, Bot_ID)
             if bot_role == 'owner':
-                await bot.set_group_ban(group_id=event.group_id, user_id=at.group(1), duration=cd.group(1))
+                await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd.group(1))
             elif bot_role == 'admin':
-                if user_role == bot_role and at.group(1) != Bot_ID or user_role == 'owner':
+                if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
                     await taboo.finish(f'{Bot_NICKNAME}没有足够的权限禁言ta哦')
-                elif at.group(1) == Bot_ID:
+                elif at_id == Bot_ID:
                     await taboo.finish('你是猪比吗，你见过谁能自己禁言自己', at_sender=True)
                 else:
-                    await bot.set_group_ban(group_id=event.group_id, user_id=at.group(1), duration=cd.group(1))
+                    await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd.group(1))
             else:
                 await taboo.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
     else:
