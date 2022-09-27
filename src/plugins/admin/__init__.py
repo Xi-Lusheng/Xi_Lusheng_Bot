@@ -1,6 +1,5 @@
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-import re
 from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START
 from utils.permission import admin_permission, get_group_role
 from nonebot.plugin import PluginMetadata

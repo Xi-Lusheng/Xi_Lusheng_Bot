@@ -1,11 +1,8 @@
 import random
 import re
-
 import requests
 from path.path import AnimeThesaurus, Util_Json
 from utils.config import Bot_MASTER, Bot_NICKNAME
-from utils.utils_def import face
-
 try:
     import ujson as json
 except ModuleNotFoundError:

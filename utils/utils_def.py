@@ -96,7 +96,6 @@ class GetRe:
     def get_msg_id(self):
         """
         获取消息id
-
         :return: re变量，使用group获取
         """
         msg_id = self._get_msg_id.search(self._raw_message)
@@ -105,7 +104,6 @@ class GetRe:
     def get_at_id(self):
         """
         获取@人qq号
-
         :return: re变量，使用group获取
         """
         at_id = self._get_at_id.search(self._raw_message)
@@ -114,7 +112,6 @@ class GetRe:
     def get_cd(self):
         """
         获取消息中的cd时间
-
         :return: re变量，使用group获取
         """
         cd = self._get_cd.search(self._raw_message)
