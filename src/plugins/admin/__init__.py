@@ -1,6 +1,6 @@
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
-from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START
+from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START, Bot_MASTER
 from utils.permission import admin_permission, get_group_role
 from nonebot.plugin import PluginMetadata
 from utils.utils_def import GetRe
@@ -99,6 +99,8 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
                     await taboo.finish(f'{Bot_NICKNAME}没有足够的权限禁言ta哦')
                 elif at_id == Bot_ID:
                     await taboo.finish('你是猪比吗，你见过谁能自己禁言自己', at_sender=True)
+                elif at_id == bot.config.superusers:
+                    await taboo.finish(f'不能禁言{Bot_MASTER}哦' ,at_sender=True)
                 else:
                     await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd)
             else:
