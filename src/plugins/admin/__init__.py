@@ -5,7 +5,7 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START, Bot_MASTER
 from utils.permission import admin_permission, get_group_role
 from nonebot.plugin import PluginMetadata
-from utils.utils_def import GetRe
+from utils.utils_def import GetRe, judgment_role
 
 __plugin_meta__ = PluginMetadata(
     name='管理员插件',
@@ -46,25 +46,21 @@ withdraw = on_regex(f"({COMMAND_START}撤回)", priority=5, block=True)
 async def withdraw_(bot: Bot, event: GroupMessageEvent):
     get_re = GetRe(event.raw_message)
     msg_id = (get_re.get_msg_id()).group(1)
-    at_id = get_re.get_at_id()
-    if msg_id and at_id:
-        for id_ in at_id:
-            user_role = await get_group_role(bot, event, id_.group())
-            bot_role = await get_group_role(bot, event, Bot_ID)
-            if bot_role == 'owner':
-                await bot.delete_msg(message_id=msg_id)
-                await withdraw.finish('已撤回')
-            elif bot_role == 'admin':
-                if user_role == bot_role and id_.group() != Bot_ID or user_role == 'owner':
-                    await withdraw.finish(f'{Bot_NICKNAME}没有足够的权限撤回ta的消息哦')
-                else:
-                    await bot.delete_msg(message_id=msg_id)
-                    await withdraw.finish('已撤回')
-            else:
-                if id_.group() == Bot_ID:
-                    await bot.delete_msg(message_id=msg_id)
-                else:
-                    await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+    at_id_group = get_re.get_at_id()
+    if msg_id and at_id_group:
+        for at_id in at_id_group:
+            i = 1
+            id_ = at_id.group(i)
+            await judgment_role(
+                function=await bot.delete_msg(message_id=msg_id),
+                at_id=id_,
+                bot=bot,
+                event=event,
+                admin_func=False,
+                member_func=True,
+                superusers=False
+            )
+            i += 1
     else:
         await withdraw.finish('命令不规范，请先使用回复选择需要撤回的消息')
 
@@ -85,8 +81,9 @@ async def taboo_all_(bot: Bot, event: GroupMessageEvent):
         await taboo_all.finish('你没有权限使用这个命令哦', at_sender=True)
 
 
-taboo = on_regex(r'^禁言\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\])+\s*cd\d*$|^(\[CQ:at,qq=[1-9][0-9]{4,10}\])+\s*禁言\s*cd\d*$',
-                 priority=5, block=True)
+taboo = on_regex(
+    r'^\s*禁言\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+cd\d*$|^\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+禁言\s*cd\s*\d*$',
+    priority=5, block=True)
 
 
 @taboo.handle()
@@ -94,24 +91,21 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
     if await admin_permission(bot, event):
         get_re = GetRe(event.raw_message)
         cd = (get_re.get_cd()).group(1)
-        at_id = get_re.get_at_id()
-        if at_id and cd:
-            for id_ in at_id:
-                user_role = await get_group_role(bot, event, id_.group())
-                bot_role = await get_group_role(bot, event, Bot_ID)
-                if bot_role == 'owner':
-                    await bot.set_group_ban(group_id=event.group_id, user_id=id_.group(), duration=cd)
-                elif bot_role == 'admin':
-                    if user_role == bot_role and id_.group() != Bot_ID or user_role == 'owner':
-                        await taboo.finish(f'{Bot_NICKNAME}没有足够的权限禁言ta哦')
-                    elif id_.group() == Bot_ID:
-                        await taboo.finish('你是猪比吗，你见过谁能自己禁言自己', at_sender=True)
-                    elif id_.group() in bot.config.superusers:
-                        await taboo.finish(f'不能禁言{Bot_MASTER}哦', at_sender=True)
-                    else:
-                        await bot.set_group_ban(group_id=event.group_id, user_id=id_.group(), duration=cd)
-                else:
-                    await taboo.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+        at_id_group = get_re.get_at_id()
+        if at_id_group and cd:
+            for at_id in at_id_group:
+                i = 1
+                id_ = at_id.group(i)
+                await judgment_role(
+                    function=await bot.set_group_ban(group_id=event.group_id, user_id=id_, duration=cd),
+                    at_id=id_,
+                    bot=bot,
+                    event=event,
+                    admin_func=False,
+                    member_func=False,
+                    superusers=False
+                )
+                i += 1
     else:
         await taboo.finish('你没有权限使用这个命令哦', at_sender=True)
 
