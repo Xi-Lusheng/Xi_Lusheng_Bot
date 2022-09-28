@@ -104,9 +104,9 @@ class GetRe:
     def get_at_id(self):
         """
         获取@人qq号
-        :return: re迭代器，通过遍历使用group获取
+        :return: re变量，使用group获取
         """
-        at_id = self._get_at_id.finditer(self._raw_message)
+        at_id = self._get_at_id.search(self._raw_message)
         return at_id
 
     def get_cd(self):
