@@ -9,10 +9,6 @@ import re
 
 
 # 消息合并转发
-from utils.config import Bot_NICKNAME, Bot_MASTER, Bot_ID
-from utils.permission import get_group_role
-
-
 async def send_forward_msg_group(
         bot: Bot,
         event: MessageEvent,
@@ -122,57 +118,4 @@ class GetRe:
         cd = self._get_cd.search(self._raw_message)
         return cd
 
-
-async def judgment_role(function,
-                        at_id,
-                        bot: Bot,
-                        event: GroupMessageEvent,
-                        admin_func: bool,
-                        member_func: bool,
-                        superusers: bool):
-    """
-    根据bot和对象在群组中权限调用平台API异步函数
-
-    :param function: 调用平台API异步函数
-    :param at_id: 命令对象id
-    :param bot: bot对象
-    :param event: 群消息
-    :param admin_func: API函数在bot权限为admin时是否生效
-    :param member_func: API函数在bot权限为member时是否生效
-    :param superusers: API函数是否对超级管理员生效
-    """
-
-    user_role = await get_group_role(bot, event, at_id)
-    bot_role = await get_group_role(bot, event, Bot_ID)
-    if bot_role == 'owner':
-        if superusers:
-            await bot.finish(f'此命令不对{Bot_MASTER}生效哦', at_sender=True)
-        else:
-            await function
-    elif bot_role == 'admin':
-        if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
-            await bot.finish(f'{Bot_NICKNAME}没有足够的权限使命令对生效ta哦')
-        elif at_id == Bot_ID:
-            if admin_func:
-                await function
-            else:
-                await bot.finish(f'此命令不对{Bot_NICKNAME}生效哦', at_sender=True)
-        elif at_id in bot.config.superusers:
-            if superusers:
-                await function
-            else:
-                await bot.finish(f'此命令不对{Bot_MASTER}生效哦', at_sender=True)
-    else:
-        if at_id == Bot_ID:
-            if member_func:
-                await function
-            elif at_id in bot.config.superusers:
-                if superusers:
-                    await function
-                else:
-                    await bot.finish(f'此命令不对{Bot_MASTER}生效哦', at_sender=True)
-            else:
-                await bot.finish(f'此命令不对{Bot_NICKNAME}生效哦', at_sender=True)
-        else:
-            await bot.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
 

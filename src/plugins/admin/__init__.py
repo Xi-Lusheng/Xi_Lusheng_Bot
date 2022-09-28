@@ -37,7 +37,6 @@ __plugin_meta__ = PluginMetadata(
     }
 )
 
-
 withdraw = on_regex(f"({COMMAND_START}撤回)", priority=5, block=True)
 
 
@@ -63,6 +62,7 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
     else:
         await withdraw.finish('命令不规范，请先使用回复选择需要撤回的消息')
 
+
 taboo_all = on_regex(f'(^{COMMAND_START}全体禁言$|^{COMMAND_START}关闭全体禁言$)', priority=5, block=True)
 
 
@@ -79,8 +79,9 @@ async def taboo_all_(bot: Bot, event: GroupMessageEvent):
         await taboo_all.finish('你没有权限使用这个命令哦', at_sender=True)
 
 
-taboo = on_regex(r'^禁言\s*\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*cd\d*$|^\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*禁言\s*cd\d*$',
-                 priority=5, block=True)
+taboo = on_regex(
+    r'^\s*禁言\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+cd\d*$|^\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+禁言\s*cd\d*$',
+    priority=5, block=True)
 
 
 @taboo.handle()
@@ -100,11 +101,10 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
                 elif at_id == Bot_ID:
                     await taboo.finish('你是猪比吗，你见过谁能自己禁言自己', at_sender=True)
                 elif at_id in bot.config.superusers:
-                    await taboo.finish(f'不能禁言{Bot_MASTER}哦' ,at_sender=True)
+                    await taboo.finish(f'不能禁言{Bot_MASTER}哦', at_sender=True)
                 else:
                     await bot.set_group_ban(group_id=event.group_id, user_id=at_id, duration=cd)
             else:
                 await taboo.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
     else:
         await taboo.finish('你没有权限使用这个命令哦', at_sender=True)
-
