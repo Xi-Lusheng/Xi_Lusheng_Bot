@@ -78,11 +78,15 @@ taboo_all = on_regex(f'(^{COMMAND_START}全体禁言$|^{COMMAND_START}关闭全�
 async def taboo_all_(bot: Bot, event: GroupMessageEvent):
     if await admin_permission(bot, event):
         enable = None
-        if event.get_plaintext() == '/全体禁言':
-            enable = True
-        elif event.get_plaintext() == '/关闭全体禁言':
-            enable = False
-        await bot.set_group_whole_ban(group_id=int(event.group_id), enable=bool(enable))
+        bot_role = await get_group_role(bot, event, Bot_ID)
+        if bot_role == 'owner' or bot_role == 'admin':
+            if event.get_plaintext() == '/全体禁言':
+                enable = True
+            elif event.get_plaintext() == '/关闭全体禁言':
+                enable = False
+            await bot.set_group_whole_ban(group_id=int(event.group_id), enable=bool(enable))
+        else:
+            await taboo_all.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
     else:
         await taboo_all.finish('你没有权限使用这个命令哦', at_sender=True)
 
