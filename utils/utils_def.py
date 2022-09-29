@@ -1,3 +1,5 @@
+import datetime
+import time
 from pathlib import Path
 from typing import List, Union
 from nonebot import logger
@@ -83,6 +85,29 @@ def face(id_: int) -> MessageSegment:
     return MessageSegment.face(id_)
 
 
+async def get_last_send_time(group_list: List, day: int) -> List:
+    data = []
+    for time_stamp in group_list:
+        last_send = time_stamp['last_sent_time']
+        user_id = time_stamp['user_id']
+        last_send_time = time.strftime('%Y-%m-%d', time.localtime(last_send))
+        user_send = {
+            user_id: last_send_time
+        }
+        data.append(user_send)
+    time_list = data
+    user_id = []
+    for times in time_list:
+        for key in times.keys():
+            for value in times.values():
+                a_time = datetime.datetime.strptime(value, '%Y-%m-%d')
+                today = datetime.datetime.now()
+                days = (today - a_time).days
+                if days >= day:
+                    user_id.append(key)
+    return user_id
+
+
 class GetRe:
     """
     正则匹配消息
@@ -92,7 +117,7 @@ class GetRe:
         self._raw_message = raw_message
         self._get_msg_id = re.compile(r"\[CQ:reply,id=(-?\d*)]")
         self._get_at_id = re.compile(r"\[CQ:at,qq=(\d*)]")
-        self._get_cd = re.compile(r"cd(\d*)")
+        self._get_time = re.compile(r"time(\d*)")
 
     def get_msg_id(self):
         """
@@ -110,12 +135,10 @@ class GetRe:
         at_id = self._get_at_id.search(self._raw_message)
         return at_id
 
-    def get_cd(self):
+    def get_time(self):
         """
-        获取消息中的cd时间
+        获取消息中的time时间
         :return: re变量，使用group获取
         """
-        cd = self._get_cd.search(self._raw_message)
+        cd = self._get_time.search(self._raw_message)
         return cd
-
-

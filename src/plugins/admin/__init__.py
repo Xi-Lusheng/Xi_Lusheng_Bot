@@ -1,9 +1,10 @@
+import datetime
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from utils.config import Bot_NICKNAME, Bot_ID, COMMAND_START, Bot_MASTER
 from utils.permission import admin_permission, get_group_role
 from nonebot.plugin import PluginMetadata
-from utils.utils_def import GetRe
+from utils.utils_def import GetRe, get_last_send_time
 
 __plugin_meta__ = PluginMetadata(
     name='管理员插件',
@@ -28,9 +29,16 @@ __plugin_meta__ = PluginMetadata(
             {
                 'func': '单人禁言',
                 'trigger_method': 'on_re',
-                'trigger_condition': '禁言@他 cd 或 @他 禁言cd',
-                'brief_des': '@要禁言的 QQ 号，cd是禁言时间，0为解除禁言',
-                'detail_des': '@要禁言的 QQ 号，cd是禁言时间，0为解除禁言'
+                'trigger_condition': '禁言@他 time 或 @他 禁言time',
+                'brief_des': '@要禁言的 QQ 号，time后面是禁言时间，0为解除禁言',
+                'detail_des': '@要禁言的 QQ 号，time后是禁言时间，0为解除禁言'
+            },
+            {
+                'func': '清理人员',
+                'trigger_method': 'on_re',
+                'trigger_condition': '清理人员 time',
+                'brief_des': '清理群不活跃人员，time后为群员上次最后发言天数',
+                'detail_des': '清理群不活跃人员，time后为群员上次最后发言天数'
             },
         ],
         'menu_template': 'default'
@@ -80,7 +88,7 @@ async def taboo_all_(bot: Bot, event: GroupMessageEvent):
 
 
 taboo = on_regex(
-    r'^\s*禁言\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+cd\d*$|^\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+禁言\s*cd\d*$',
+    r'^\s*禁言\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+time\d*$|^\s*(\[CQ:at,qq=[1-9][0-9]{4,10}\]\s*)+禁言\s*time\d*$',
     priority=5, block=True)
 
 
@@ -89,7 +97,7 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
     if await admin_permission(bot, event):
         get_re = GetRe(event.raw_message)
         at_id = (get_re.get_at_id()).group(1)
-        cd = (get_re.get_cd()).group(1)
+        cd = (get_re.get_time()).group(1)
         if at_id and cd:
             user_role = await get_group_role(bot, event, at_id)
             bot_role = await get_group_role(bot, event, Bot_ID)
@@ -108,3 +116,29 @@ async def taboo_(bot: Bot, event: GroupMessageEvent):
                 await taboo.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
     else:
         await taboo.finish('你没有权限使用这个命令哦', at_sender=True)
+
+
+clear_user = on_regex(r'^\s*清理人员\s*time\d*$', priority=5, block=True)
+
+
+@clear_user.handle()
+async def clear_user_(bot: Bot, event: GroupMessageEvent):
+    if await admin_permission(bot, event):
+        get_re = GetRe(event.raw_message)
+        cd = (get_re.get_time()).group(1)
+        group_list = await bot.get_group_member_list(group_id=event.group_id)
+        users_id = await get_last_send_time(group_list, cd)
+        for user_id in users_id:
+            user_role = await get_group_role(bot, event, user_id)
+            bot_role = await get_group_role(bot, event, Bot_ID)
+            if bot_role == 'owner' or bot_role == 'admin' and user_role == 'member':
+                if user_id == Bot_ID:
+                    continue
+                if user_id in bot.config.superusers:
+                    continue
+                else:
+                    await bot.set_group_kick(group_id=event.group_id, user_id=user_id)
+            else:
+                await clear_user.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+    else:
+        await clear_user.finish('你没有权限使用这个命令哦', at_sender=True)
