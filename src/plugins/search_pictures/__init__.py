@@ -64,14 +64,16 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             msgs = []
             for data in datas:
                 msgs.append(Message('对比图片' + '\n' + MessageSegment.image(data['image']) + '\n' +
-                                    '相似度：{} %'.format(MessageSegment.text(data['similarity'])) + '\n' +
-                                    '作者:' + '\n' + MessageSegment.text(data['author']) + '\n' +
-                                    '图片来源' + '\n' + MessageSegment.text(data['url'])))
+                                    '相似度：{} %'.format(data['similarity']) + '\n' +
+                                    '作者: {}'.format(data['author']) + '\n' +
+                                    '图片来源: {}'.format(data['url'])))
             try:
                 await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}',
                                              msgs=msgs if msgs else ['没有找到相似的图片呢，换一张试试'])
             except ActionFailed:
                 await picture.finish(f'{Bot_NICKNAME}可能被企鹅风控了', at_sender=True)
+            except Exception as e:
+                await picture.finish(str(e), at_sender=True)
     except ConnectionError:
         await picture.finish(f'等一下！太快了！让{Bot_NICKNAME}休息一会吧', at_sender=True)
 
@@ -100,10 +102,10 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
         else:
             msg = []
             for datas in data:
-                msg.append(Message('动漫名称: {}'.format(MessageSegment.text(datas['anime_name'])) + '\n' +
+                msg.append(Message('动漫名称: {}'.format(datas['anime_name']) + '\n' +
                                    MessageSegment.image(datas['image']) + '\n' +
-                                   '第 {} 集'.format(MessageSegment.text(datas['episode'])) + '\n' +
-                                   '相似度：{} %'.format(MessageSegment.text(datas['similarity']))))
+                                   '第 {} 集'.format(datas['episode']) + '\n' +
+                                   '相似度：{}'.format(datas['similarity'])))
 
             try:
                 await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}',

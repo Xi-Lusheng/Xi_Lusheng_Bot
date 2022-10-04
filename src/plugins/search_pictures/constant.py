@@ -13,7 +13,7 @@ async def get_search_pictures(image: str):
             'image': result.thumbnail,
             'author': result.author,
             'similarity': str(result.similarity),
-            'url': result.urls
+            'url': result.urls[0]
         }
         data.append(dic)
     return data
