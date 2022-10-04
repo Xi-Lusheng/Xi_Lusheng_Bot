@@ -1,43 +1,25 @@
-import json
 import requests
 from utils.config import sauce_key, num_res, pictures_number
+from saucenao_api import SauceNao
 
 
 async def get_search_pictures(image: str):
-    try:
-        url = 'https://saucenao.com/search.php'
-        data = {
-            'url': image,
-            'db': '999',
-            'api_key': sauce_key,
-            'output_type': 2,
-            'numres': num_res,
+    sauce = SauceNao(sauce_key, numres=num_res)
+    results = sauce.from_url(image)
+    data = []
+    for i in range(len(results)):
+        result = results[i]
+        dic = {
+            'image': result.thumbnail,
+            'author': result.author,
+            'similarity': str(result.similarity),
+            'url': result.urls
         }
-
-        resp = requests.get(url, params=data)
-
-        result = json.loads(resp.content)
-
-        data = []
-        for i in result['results']:
-            similarity = i['header']['similarity']
-            image = i['header']['thumbnail']
-            if 'ext_urls' in i['data'].keys():
-                from_ = (i['data']['ext_urls'][0])
-            else:
-                from_ = '没有找到相关链接哦'
-            dic = {
-                'image': image,
-                'similarity': similarity,
-                'url': from_
-            }
-            data.append(dic)
-        return data
-    except KeyError:
-        return '快把图给我交了！'
+        data.append(dic)
+    return data
 
 
-async def get_anime(image):
+async def get_anime(image: str):
     url = "https://api.trace.moe/search?anilistInfo&url={}".format(image)
     anime_json = (requests.get(url)).json()
     try:
