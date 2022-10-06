@@ -53,5 +53,5 @@ async def get_anime(image: str):
             return data
         else:
             return None
-    except:
-        return "发生了奇怪的错误，那就没办法了，再试一次？"
+    except Exception as e:
+        return e
