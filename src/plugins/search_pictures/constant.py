@@ -9,11 +9,12 @@ async def get_search_pictures(image: str):
     data = []
     for i in range(len(results)):
         result = results[i]
+        url = result.urls
         dic = {
             'image': result.thumbnail,
             'author': result.author,
             'similarity': str(result.similarity),
-            'url': result.urls[0]
+            'url': url[0]
         }
         data.append(dic)
     return data
