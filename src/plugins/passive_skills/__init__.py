@@ -1,3 +1,5 @@
+from nonebot import on_notice
+from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent
 from nonebot.plugin import PluginMetadata
 from utils.config import Bot_NICKNAME
 
@@ -42,8 +44,32 @@ __plugin_meta__ = PluginMetadata(
                 'brief_des': '查询二次元浓度(雾',
                 'detail_des': '查询二次元浓度(雾'
             },
+            {
+                'func': '群成员变动通知',
+                'trigger_method': 'on_notice',
+                'trigger_condition': '群成员变动',
+                'brief_des': '群成员变动通知',
+                'detail_des': '群成员变动通知'
+            },
         ],
         'menu_template': 'default'
     }
 )
+
+notice = on_notice()
+
+
+@notice.handle()
+async def welcome(event: GroupIncreaseNoticeEvent):
+    user = event.get_user_id()
+    at_ = "欢迎！：[CQ:at,qq={}]".format(user)
+    msg = at_ + '大佬加入'
+    await notice.finish(msg)
+
+
+@notice.handle()
+async def decrease(event: GroupDecreaseNoticeEvent):
+    user = event.get_user_id()
+    msg = "{}退出了群聊".format(user)
+    await notice.finish(msg)
 
