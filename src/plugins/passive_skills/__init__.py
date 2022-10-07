@@ -1,7 +1,10 @@
+import os
+import random
 from nonebot import on_notice
-from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent
+from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent, MessageSegment, MessageEvent
 from nonebot.plugin import PluginMetadata
 from utils.config import Bot_NICKNAME
+from path.path import pixiv_image_path
 
 __plugin_meta__ = PluginMetadata(
     name='被动技能',
@@ -61,15 +64,17 @@ notice = on_notice()
 
 @notice.handle()
 async def welcome(event: GroupIncreaseNoticeEvent):
-    user = event.get_user_id()
-    at_ = "欢迎！：[CQ:at,qq={}]".format(user)
-    msg = at_ + '大佬加入'
+    user_id = event.get_user_id()
+    welcome_image = pixiv_image_path / random.choice(os.listdir(pixiv_image_path))
+    msg = "欢迎大佬" + \
+          MessageSegment.at(user_id) + '\n' + \
+          MessageSegment.image(welcome_image) + '\n' + \
+          '群友都是南通，说话又好听，欢迎你的加入'
     await notice.finish(msg)
 
 
 @notice.handle()
 async def decrease(event: GroupDecreaseNoticeEvent):
     user = event.get_user_id()
-    msg = "{}退出了群聊".format(user)
+    msg = "{} 退出了群聊".format(user)
     await notice.finish(msg)
-
