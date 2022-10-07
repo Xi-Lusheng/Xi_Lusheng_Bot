@@ -80,7 +80,6 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
         await picture.finish(f'等一下！太快了！让{Bot_NICKNAME}休息一会吧', at_sender=True)
 
 
-
 anime = on_command('识番', priority=5, block=True)
 
 
