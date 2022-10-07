@@ -13,6 +13,7 @@ from .constant import get_chat_result, get_message, utils_get_chat_result
 from data.reply_data.msg_data import *
 import re
 from nonebot.plugin import PluginMetadata
+from utils.config import COMMAND_START
 
 __plugin_meta__ = PluginMetadata(
     name='AI聊天',
@@ -71,16 +72,17 @@ util_msg = on_message(priority=99, block=True)
 
 @util_msg.handle()
 async def util_msg_(event: MessageEvent):
-    msg = str(event.get_message())
-    if msg[0] == '/':
-        pass
-    else:
-        msg = re.sub(r"\[.*?\]", "", msg)
-        result = await utils_get_chat_result(msg)
-        if result:
-            await util_msg.finish(Message(result))
-        else:
+    if random.randint(0, 10) > 7:
+        msg = str(event.get_message())
+        if msg[0] == f'{COMMAND_START}':
             pass
+        else:
+            msg = re.sub(r"\[.*?\]", "", msg)
+            result = await utils_get_chat_result(msg)
+            if result:
+                await util_msg.finish(Message(result))
+            else:
+                pass
 
 
 _2d = on_command('二次元浓度', priority=5, block=True)
@@ -88,7 +90,7 @@ _2d = on_command('二次元浓度', priority=5, block=True)
 
 @_2d.handle()
 async def _2d_():
-    if random.random() < 0.7:
+    if random.randint(0, 10) > 7:
         try:
             await _2d.send(Message(str(random.randint(0, 100)) + '%'))
         except:
