@@ -96,9 +96,9 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             await anime.reject_arg('img_url', '发送的必须是图片！')
         img_url = img_url[0]
         data = await get_anime(img_url)
-        await anime.send('开始识别.....请不要进行其它操作')
+        await anime.send('开始识别.....请不要进行其它操作', at_sender=True)
         if data is None:
-            await anime.send(f'没有找到相似的图片，果咩..', at_sender=True)
+            await anime.finish('发生了奇怪的错误，再试一次？', at_sender=True)
         else:
             msg = []
             for datas in data:
@@ -115,6 +115,6 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
     except ConnectionError:
         await picture.finish(f'等一下！太快了！让{Bot_NICKNAME}休息一会吧', at_sender=True)
     except TypeError or KeyError:
-        await anime.finish(f'{Bot_NICKNAME}这个月找番找累了，下个月再来吧')
+        await anime.finish(f'{Bot_NICKNAME}这个月找番找累了，下个月再来吧', at_sender=True)
     except:
-        await anime.finish('插件出现未知错误，请尽快练习联系汐鹿生修复')
+        await anime.finish('插件出现未知错误，请尽快联系开发者修复', at_sender=True)

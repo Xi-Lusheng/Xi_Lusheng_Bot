@@ -22,36 +22,33 @@ async def get_search_pictures(image: str):
 async def get_anime(image: str):
     url = "https://api.trace.moe/search?anilistInfo&url={}".format(image)
     anime_json = (requests.get(url)).json()
-    try:
-        if not anime_json["error"]:
-            if anime_json == "Error reading imagenull":
-                return None
-            data = []
-            # 拿到动漫 中文名
-            for anime in anime_json["result"][:pictures_number]:
-                synonyms = anime["anilist"]["synonyms"]
-                for x in synonyms:
-                    _count_ch = 0
-                    for word in x:
-                        if "\u4e00" <= word <= "\u9fff":
-                            _count_ch += 1
-                    if _count_ch > 3:
-                        anime_name = x
-                        break
-                else:
-                    anime_name = anime["anilist"]["title"]["native"]
-                episode = str(anime["episode"])
-                similarity = '{:.2%}'.format(anime["similarity"])
-                image = anime["image"]
-                dic = {
-                    'anime_name': anime_name,
-                    'episode': episode,
-                    'similarity': similarity,
-                    'image': image
-                }
-                data.append(dic)
-            return data
-        else:
+    if not anime_json["error"]:
+        if anime_json == "Error reading imagenull":
             return None
-    except Exception as e:
-        return e
+        data = []
+        # 拿到动漫 中文名
+        for anime in anime_json["result"][:pictures_number]:
+            synonyms = anime["anilist"]["synonyms"]
+            for x in synonyms:
+                _count_ch = 0
+                for word in x:
+                    if "\u4e00" <= word <= "\u9fff":
+                        _count_ch += 1
+                if _count_ch > 3:
+                    anime_name = x
+                    break
+            else:
+                anime_name = anime["anilist"]["title"]["native"]
+            episode = str(anime["episode"])
+            similarity = '{:.2%}'.format(anime["similarity"])
+            image = anime["image"]
+            dic = {
+                'anime_name': anime_name,
+                'episode': episode,
+                'similarity': similarity,
+                'image': image
+            }
+            data.append(dic)
+        return data
+    else:
+        return None
