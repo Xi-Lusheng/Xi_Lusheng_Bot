@@ -103,7 +103,7 @@ async def get_last_send_time(group_list: List, day: int) -> List:
                 a_time = datetime.datetime.strptime(value, '%Y-%m-%d')
                 today = datetime.datetime.now()
                 days = (today - a_time).days
-                if days >= day:
+                if days >= int(day):
                     user_id.append(key)
     return user_id
 
@@ -117,7 +117,7 @@ class GetRe:
         self._raw_message = raw_message
         self._get_msg_id = re.compile(r"\[CQ:reply,id=(-?\d*)]")
         self._get_at_id = re.compile(r"\[CQ:at,qq=(\d*)]")
-        self._get_time = re.compile(r"time(\d*)")
+        self._get_time = re.compile(r"(time|cd|day)(\d*)")
 
     def get_msg_id(self):
         """
