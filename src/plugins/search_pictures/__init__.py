@@ -70,12 +70,8 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
             try:
                 await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}',
                                              msgs=msgs if msgs else ['没有找到相似的图片呢，换一张试试'])
-            except Exception as e:
-                await picture.finish(str(e), at_sender=True)
             except ActionFailed:
                 await picture.finish(f'{Bot_NICKNAME}可能被企鹅风控了')
-    except Exception as e:
-        await picture.finish(str(e), at_sender=True)
     except ConnectionError:
         await picture.finish(f'等一下！太快了！让{Bot_NICKNAME}休息一会吧', at_sender=True)
 
