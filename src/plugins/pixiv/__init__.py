@@ -43,3 +43,10 @@ async def pixiv_(event: Event):
     result = await get_image(msg)
     await pixiv.finish(result)
 
+
+setu = on_regex("^涩图$|^setu$|^无内鬼$|^色图$|^涩图tag.+$")
+
+
+@setu.handle()
+async def setu_():
+    await setu.finish("涩图功能暂时关闭重新构建代码中")
