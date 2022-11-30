@@ -1,5 +1,6 @@
 import os
 import random
+import requests
 from nonebot.adapters.onebot.v11 import MessageSegment
 from path.path import pixiv_image_path, pixiv_image_r18_path, pixiv_path
 import re
@@ -13,16 +14,23 @@ import base64
 async def get_image(msg: str) -> MessageSegment or str:
     r18 = re.search('r18', msg)
     result = None
+    url = 'https://api.xilusheng.top/nonebot/pixiv/random/'
     if r18:
-        image_r18 = random.choice(os.listdir(pixiv_image_r18_path))
+        data = {
+            "is_r18": True
+        }
+        image_r18 = requests.get((requests.get(url, params=data).json())['data'][0]['image'])
+        # image_r18 = random.choice(os.listdir(pixiv_image_r18_path))
         img_on = Image.open(pixiv_path / 'out.png')
-        img_in = Image.open(pixiv_image_r18_path / image_r18)
+        img_in = Image.open(io.BytesIO(image_r18.content))
         image = await color_car(img_on, img_in)
         if image:
             result = MessageSegment.image(f"base64://{base64.b64encode(image.getvalue()).decode()}")
     else:
-        image = random.choice(os.listdir(pixiv_image_path))
-        result = MessageSegment.image(pixiv_image_path / image)
+        # image = random.choice(os.listdir(pixiv_image_path))
+        # result = MessageSegment.image(pixiv_image_path / image)
+        results = (requests.get(url).json())['data'][0]['image']
+        result = MessageSegment.image(results)
     return result
 
 
