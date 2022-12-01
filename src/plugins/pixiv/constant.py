@@ -19,14 +19,14 @@ async def get_image(msg: str) -> Message:
         image_r18 = data['data'][0]['image']
         image_id = data['data'][0]['id']
         image_path = requests.get(image_r18)
-        img = Image.new('RGB', (350, 350), (100, 100, 100))
+        img = Image.new('RGB', (350, 350), (60, 60, 60))
         draw = ImageDraw.Draw(img)
         width, height = img.size
         word = "你就冲吧你"
         font_size = 50
         font = ImageFont.truetype('simhei.ttf', size=font_size)
         w, h = len(word) * font_size, font_size
-        draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(120, 120, 120), font=font)
+        draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(80, 80, 80), font=font)
         img_on = img.copy()
         img_in = Image.open(io.BytesIO(image_path.content))
         image = await color_car(img_on, img_in)
