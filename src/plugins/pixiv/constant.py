@@ -76,7 +76,7 @@ async def color_car(
         w_light: float = 1.0,
         b_light: float = 0.18,
         w_color: float = 0.5,
-        b_color: float = 0.6,
+        b_color: float = 0.7,
         chess: bool = False,
 ):
     """
