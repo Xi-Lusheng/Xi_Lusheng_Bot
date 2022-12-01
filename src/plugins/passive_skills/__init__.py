@@ -5,6 +5,7 @@ from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseN
 from nonebot.plugin import PluginMetadata
 from utils.config import Bot_NICKNAME
 from path.path import pixiv_image_path
+from src.plugins.passive_skills.constant import get_image
 
 __plugin_meta__ = PluginMetadata(
     name='被动技能',
@@ -65,7 +66,7 @@ notice = on_notice()
 @notice.handle()
 async def welcome(event: GroupIncreaseNoticeEvent):
     user_id = event.get_user_id()
-    welcome_image = pixiv_image_path / random.choice(os.listdir(pixiv_image_path))
+    welcome_image = await get_image()
     msg = "欢迎大佬" + \
           MessageSegment.at(user_id) + '\n' + \
           MessageSegment.image(welcome_image) + '\n' + \

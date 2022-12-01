@@ -1,37 +1,44 @@
-import os
-import random
 import requests
 from nonebot.adapters.onebot.v11 import MessageSegment, Message
-from path.path import pixiv_image_path, pixiv_image_r18_path, pixiv_path
 import re
 import io
 from typing import Tuple
 import numpy as np
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageDraw, ImageFont
 import base64
 
 
-async def get_image(msg: str) -> MessageSegment or str:
+async def get_image(msg: str) -> Message:
     r18 = re.search('r18', msg)
-    result = None
     url = 'https://api.xilusheng.top/nonebot/pixiv/random/'
     if r18:
-        data = {
+        params = {
             "is_r18": True
         }
-        image_r18 = (requests.get(url, params=data).json())['data'][0]['image']
+        data = requests.get(url, params=params).json()
+        image_r18 = data['data'][0]['image']
+        image_id = data['data'][0]['id']
         image_path = requests.get(image_r18)
-        # image_r18 = random.choice(os.listdir(pixiv_image_r18_path))
-        img_on = Image.open(pixiv_path / 'out.png')
+        img_on = Image.new('RGB', (350, 350), (50, 50, 50))
+        draw = ImageDraw.Draw(img_on)
+        width, height = img_on.size
+        word = "你就冲吧你"
+        font_size = 50
+        font = ImageFont.truetype('E:/Python Project/NoneBot/Xi_Lusheng/menu_config/fonts/hwzs.ttf', size=font_size)
+        w, h = len(word) * font_size, font_size
+        draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(100, 100, 100), font=font)
+        img_on.save('img_on.png')
         img_in = Image.open(io.BytesIO(image_path.content))
         image = await color_car(img_on, img_in)
         res = MessageSegment.image(f"base64://{base64.b64encode(image.getvalue()).decode()}")
-        result = res + MessageSegment.text(f"原图片链接：{image_r18}")
+        result = res + MessageSegment.text(f"图片id：{image_id} \n"
+                                           f"原图片链接：{image_r18}")
     else:
-        # image = random.choice(os.listdir(pixiv_image_path))
-        # result = MessageSegment.image(pixiv_image_path / image)
-        results = (requests.get(url).json())['data'][0]['image']
-        result = MessageSegment.image(results)
+        data = requests.get(url).json()
+        image = data['data'][0]['image']
+        image_id = data['data'][0]['id']
+        res = MessageSegment.image(image)
+        result = MessageSegment.text(f"图片id：{image_id}\n") + res
     return result
 
 
@@ -45,8 +52,8 @@ async def resize_image(
     """
     统一图像大小
     """
-    _w_img = img_out.convert(mode)
-    _b_img = img_in.convert(mode).resize(_w_img.size, Image.NEAREST)
+    _b_img = img_in.convert(mode)
+    _w_img = img_out.convert(mode).resize(_b_img.size, Image.NEAREST)
 
     w_width, w_height = _w_img.size
     b_width, b_height = _b_img.size
