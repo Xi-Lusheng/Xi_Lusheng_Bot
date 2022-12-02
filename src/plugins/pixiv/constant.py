@@ -188,8 +188,8 @@ async def get_resize_image(filein):
     file = Image.open(filein)
     width, height = None, None
     if file.size[0] or file.size[1] < 500:
-        width = int(file.size[0] * 3)
-        height = int(file.size[1] * 3)
+        width = int(file.size[0] * 2.8)
+        height = int(file.size[1] * 2.8)
     elif file.size[0] or file.size[1] < 1000:
         width = int(file.size[0] * 2.5)
         height = int(file.size[1] * 2.5)
@@ -197,7 +197,7 @@ async def get_resize_image(filein):
         width = int(file.size[0] * 2)
         height = int(file.size[1] * 2)
     elif file.size[0] or file.size[1] < 2000:
-        width = int(file.size[0] * 1.4)
-        height = int(file.size[1] * 1.4)
+        width = int(file.size[0] * 1.2)
+        height = int(file.size[1] * 1.2)
     image = file.resize((width, height), Image.ANTIALIAS)
     return image
