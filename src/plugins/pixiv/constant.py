@@ -181,15 +181,19 @@ async def get_new_image(word="你就冲吧你", font_size=120):
     return new_img
 
 
-async def get_resize_image(filein, scale=3):
+async def get_resize_image(filein, scale=2):
     """
     改变图片大小
     :param scale: 提高像素倍速
     :param filein: 输入图片
     """
     file = Image.open(filein)
+    width, height = None, None
     if file.size[0] and file.size[1] < 2000:
         width = int(file.size[0] * scale)
         height = int(file.size[1] * scale)
-        image = file.resize((width, height), Image.ANTIALIAS)
-        return image
+    elif file.size[0] and file.size[1] < 1000:
+        width = int(file.size[0] * (scale + 1))
+        height = int(file.size[1] * (scale + 1))
+    image = file.resize((width, height), Image.ANTIALIAS)
+    return image
