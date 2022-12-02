@@ -19,16 +19,8 @@ async def get_image(msg: str) -> Message:
         image_r18 = data['data'][0]['image']
         image_id = data['data'][0]['id']
         image_path = requests.get(image_r18)
-        img = Image.new('RGB', (350, 350), (50, 50, 50))
-        draw = ImageDraw.Draw(img)
-        width, height = img.size
-        word = "你就冲吧你"
-        font_size = 50
-        font = ImageFont.truetype('simhei.ttf', size=font_size)
-        w, h = len(word) * font_size, font_size
-        draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(100, 100, 100), font=font)
-        img_on = img.copy()
-        img_in = Image.open(io.BytesIO(image_path.content))
+        img_on = await get_new_image()
+        img_in = await get_resize_image(io.BytesIO(image_path.content))
         image = await color_car(img_on, img_in)
         res = MessageSegment.image(f"base64://{base64.b64encode(image.getvalue()).decode()}")
         result = res + MessageSegment.text(f"图片id：{image_id} \n"
@@ -135,3 +127,69 @@ async def color_car(
     output = io.BytesIO()
     Image.fromarray(colors.astype("uint8")).convert("RGBA").save(output, format="png")
     return output
+
+
+async def gray_car(
+        wimg: Image.Image,
+        bimg: Image.Image,
+        wlight: float = 1.0,
+        blight: float = 0.3,
+        chess: bool = False,
+):
+    """
+    发黑白车
+    :param wimg: 白色背景下的图片
+    :param bimg: 黑色背景下的图片
+    :param wlight: wimg 的亮度
+    :param blight: bimg 的亮度
+    :param chess: 是否棋盘格化
+    :return: 处理后的图像
+    """
+    wimg, bimg = await resize_image(wimg, bimg, "L")
+
+    wpix = np.array(wimg).astype("float64")
+    bpix = np.array(bimg).astype("float64")
+
+    # 棋盘格化
+    # 规则: if (x + y) % 2 == 0 { wpix[x][y] = 255 } else { bpix[x][y] = 0 }
+    if chess:
+        wpix[::2, ::2] = 255.0
+        bpix[1::2, 1::2] = 0.0
+
+    wpix *= wlight
+    bpix *= blight
+
+    a = 1.0 - wpix / 255.0 + bpix / 255.0
+    r = np.where(a != 0, bpix / a, 255.0)
+
+    pixels = np.dstack((r, r, r, a * 255.0))
+
+    pixels[pixels > 255] = 255
+
+    output = io.BytesIO()
+    Image.fromarray(pixels.astype("uint8")).convert("RGBA").save(output, format="png")
+    return output
+
+
+async def get_new_image(word="你就冲吧你", font_size=120):
+    new_img = Image.new('RGBA', (850, 850), (100, 100, 100))
+    draw = ImageDraw.Draw(new_img)
+    width, height = new_img.size
+    font = ImageFont.truetype('simhei.ttf', size=font_size)
+    w, h = len(word) * font_size, font_size
+    draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(120, 120, 120), font=font)
+    return new_img
+
+
+async def get_resize_image(filein, scale=3):
+    """
+    改变图片大小
+    :param scale: 提高像素倍速
+    :param filein: 输入图片
+    """
+    file = Image.open(filein)
+    if file.size[0] and file.size[1] < 2000:
+        width = int(file.size[0] * scale)
+        height = int(file.size[1] * scale)
+        image = file.resize((width, height), Image.ANTIALIAS)
+        return image
