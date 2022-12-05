@@ -49,7 +49,7 @@ async def pixiv_(event: Event):
         message = MessageSegment.text(f"\n图片id：{image_id}\n"
                                       f"图片链接：{image}")
         await pixiv.send(message, at_sender=True)
-        await pixiv.send('查看r18请等待合成幻影坦克', at_sender=True)
+        await pixiv.send('请等待合成幻影坦克', at_sender=True)
         image_path = requests.get(image)
         img_on = await get_new_image()
         img_in = await get_resize_image(io.BytesIO(image_path.content))
