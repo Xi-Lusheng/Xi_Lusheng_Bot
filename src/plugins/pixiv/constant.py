@@ -1,14 +1,12 @@
 import requests
-from nonebot.adapters.onebot.v11 import MessageSegment, Message
 import re
 import io
 from typing import Tuple
 import numpy as np
 from PIL import Image, ImageEnhance, ImageDraw, ImageFont
-import base64
 
 
-async def get_image(msg: str) -> Message:
+async def get_image(msg: str) -> dict:
     r18 = re.search('r18', msg)
     url = 'https://api.xilusheng.top/nonebot/pixiv/random/'
     if r18:
@@ -16,22 +14,16 @@ async def get_image(msg: str) -> Message:
             "is_r18": True
         }
         data = requests.get(url, params=params).json()
-        image_r18 = data['data'][0]['image']
+        image = data['data'][0]['image']
         image_id = data['data'][0]['id']
-        image_path = requests.get(image_r18)
-        img_on = await get_new_image()
-        img_in = await get_resize_image(io.BytesIO(image_path.content))
-        image = await color_car(img_on, img_in)
-        res = MessageSegment.image(f"base64://{base64.b64encode(image.getvalue()).decode()}")
-        result = res + MessageSegment.text(f"图片id：{image_id} \n"
-                                           f"原图片链接：{image_r18}")
     else:
         data = requests.get(url).json()
         image = data['data'][0]['image']
         image_id = data['data'][0]['id']
-        res = MessageSegment.image(image)
-        result = MessageSegment.text(f"图片id：{image_id}\n") + res
-    return result
+    return {
+        "image_id": image_id,
+        "image": image
+    }
 
 
 np.seterr(divide="ignore", invalid="ignore")
@@ -188,16 +180,16 @@ async def get_resize_image(filein):
     file = Image.open(filein)
     width, height = None, None
     if file.size[0] or file.size[1] < 500:
-        width = int(file.size[0] * 2.8)
-        height = int(file.size[1] * 2.8)
+        width = int(file.size[0] * 3)
+        height = int(file.size[1] * 3)
     elif file.size[0] or file.size[1] < 1000:
-        width = int(file.size[0] * 2.5)
-        height = int(file.size[1] * 2.5)
-    elif file.size[0] or file.size[1] < 1500:
         width = int(file.size[0] * 2)
         height = int(file.size[1] * 2)
+    elif file.size[0] or file.size[1] < 1500:
+        width = int(file.size[0] * 1.5)
+        height = int(file.size[1] * 1.5)
     elif file.size[0] or file.size[1] < 2000:
         width = int(file.size[0] * 1.2)
         height = int(file.size[1] * 1.2)
-    image = file.resize((width, height), Image.ANTIALIAS)
+    image = file.resize((width, height), Image.NEAREST)
     return image
