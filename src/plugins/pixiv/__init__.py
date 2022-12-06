@@ -1,5 +1,7 @@
 import base64
 import re
+import time
+
 from nonebot import on_regex
 from nonebot.adapters.onebot.exception import ActionFailed
 from nonebot.adapters.onebot.v11 import Event, MessageSegment
@@ -55,7 +57,7 @@ async def pixiv_(event: Event):
             result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
                                                  f"图片链接：{message['image_url']}")
             await pixiv.finish(result)
-        except ValueError or ActionFailed:
+        except (ActionFailed, ValueError):
             await pixiv.send("合成失败将只发送原图链接")
             await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
                                                    f"图片链接：{data['image_url']}"))
