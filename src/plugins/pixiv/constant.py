@@ -10,21 +10,22 @@ async def get_image(sort: int) -> dict:
     data = requests.get(url, params={"sort": sort}).json()
     image_url = data['data'][0]['image']
     image_id = data['data'][0]['id']
-    if sort == 2:
-        image_path = requests.get(image_url)
-        img_on = await get_new_image()
-        img_in = await get_resize_image(io.BytesIO(image_path.content))
-        new_image = await color_car(img_on, img_in)
-        return {
-            "image_id": image_id,
-            "image_url": image_url,
-            "new_image": new_image
-        }
-    else:
-        return {
-            "image_id": image_id,
-            "image_url": image_url,
-        }
+    return {
+        "image_id": image_id,
+        "image_url": image_url,
+    }
+
+
+async def make_new_image(data: dict):
+    image_path = requests.get(data['image_url'])
+    img_on = await get_new_image()
+    img_in = await get_resize_image(io.BytesIO(image_path.content))
+    new_image = await color_car(img_on, img_in)
+    return {
+        "image_id": data['image_id'],
+        "image_url": data['image_url'],
+        "new_image": new_image
+    }
 
 
 np.seterr(divide="ignore", invalid="ignore")

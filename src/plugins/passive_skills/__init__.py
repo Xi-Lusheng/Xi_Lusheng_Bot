@@ -1,10 +1,7 @@
-import os
-import random
 from nonebot import on_notice
 from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent, MessageSegment
 from nonebot.plugin import PluginMetadata
 from utils.config import Bot_NICKNAME
-from path.path import pixiv_image_path
 from src.plugins.passive_skills.constant import get_image
 
 __plugin_meta__ = PluginMetadata(

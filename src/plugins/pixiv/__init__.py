@@ -4,7 +4,7 @@ from nonebot import on_regex
 from nonebot.adapters.onebot.exception import ActionFailed
 from nonebot.adapters.onebot.v11 import Event, MessageSegment
 from nonebot.plugin import PluginMetadata
-from src.plugins.pixiv.constant import get_image, get_new_image, get_resize_image, color_car
+from src.plugins.pixiv.constant import get_image, make_new_image
 
 __plugin_meta__ = PluginMetadata(
     name='二次元',
@@ -48,25 +48,33 @@ async def pixiv_(event: Event):
     r16 = re.search('(涩图|色图)', msg)
     if r18:
         await pixiv.send('r18请等待合成幻影坦克', at_sender=True)
-        message = await get_image(sort=2)
+        data = await get_image(sort=2)
         try:
-            result = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
-            message = result + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
-                                                   f"图片链接：{message['image_url']}")
-            await pixiv.finish(message)
-        except ActionFailed:
+            message = await make_new_image(data)
+            image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
+            result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
+                                                 f"图片链接：{message['image_url']}")
+            await pixiv.finish(result)
+        except ValueError:
             await pixiv.send("合成失败将只发送原图链接")
-            await pixiv.finish(MessageSegment.text(f"图片id：{message['image_id']}\n"
-                                                   f"图片链接：{message['image_url']}"))
+            await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
+                                                   f"图片链接：{data['image_url']}"))
     elif r16:
-        message = await get_image(sort=1)
+        data = await get_image(sort=1)
     else:
-        message = await get_image(sort=0)
+        data = await get_image(sort=0)
     try:
-        image = MessageSegment.image(message['image_url'])
-        result = MessageSegment.text(f"图片id：{message['image_id']}")
-        await pixiv.finish(image + result)
+        image = MessageSegment.image(data['image_url'])
+        result = image + MessageSegment.text(f"图片id：{data['image_id']}")
+        await pixiv.finish(result)
     except ActionFailed:
-        await pixiv.send("图片发送失败可能被风控，将发送图片链接")
-        await pixiv.finish(MessageSegment.text(f"图片id：{message['image_id']}\n"
-                                               f"图片链接：{message['image_url']}"))
+        await pixiv.send("图片发送失败可能被风控，将合成幻影坦克")
+        message = await make_new_image(data)
+        image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
+        result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
+                                             f"图片链接：{message['image_url']}")
+        await pixiv.finish(result)
+    except ValueError:
+        await pixiv.send("幻影坦克合成失败，将发送图片原链接")
+        await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
+                                               f"图片链接：{data['image_url']}"))
