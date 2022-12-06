@@ -4,15 +4,6 @@ try:
 except ModuleNotFoundError:
     import json
 
-# pixiv 路径
-pixiv_path = Path() / 'data' / 'pixiv_data'
-
-# pixiv image路径
-pixiv_image_path = Path() / 'data' / 'pixiv_data' / 'image'
-
-# pixiv r18路径
-pixiv_image_r18_path = Path() / 'data' / 'pixiv_data' / 'image_r18'
-
 # 语音路径
 scold_data_path = Path() / 'data' / 'scold_data'
 

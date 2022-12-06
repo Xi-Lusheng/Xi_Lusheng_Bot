@@ -66,7 +66,7 @@ notice = on_notice()
 @notice.handle()
 async def welcome(event: GroupIncreaseNoticeEvent):
     user_id = event.get_user_id()
-    welcome_image = await get_image()
+    welcome_image = await get_image(sort=0)
     msg = "欢迎大佬" + \
           MessageSegment.at(user_id) + '\n' + \
           MessageSegment.image(welcome_image) + '\n' + \

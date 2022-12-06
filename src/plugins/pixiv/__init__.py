@@ -1,13 +1,10 @@
 import base64
-import io
 import re
-
-import requests
 from nonebot import on_regex
+from nonebot.adapters.onebot.exception import ActionFailed
 from nonebot.adapters.onebot.v11 import Event, MessageSegment
 from nonebot.plugin import PluginMetadata
 from src.plugins.pixiv.constant import get_image, get_new_image, get_resize_image, color_car
-from src.plugins.pixiv.create_data import create_file
 
 __plugin_meta__ = PluginMetadata(
     name='二次元',
@@ -19,8 +16,15 @@ __plugin_meta__ = PluginMetadata(
                 'func': '二次元',
                 'trigger_method': 'on_re',
                 'trigger_condition': '二次元 来点二次元',
-                'brief_des': '发送动漫图片',
-                'detail_des': '发送动漫图片'
+                'brief_des': '发送二次元图片',
+                'detail_des': '发送二次元图片'
+            },
+            {
+                'func': '涩图',
+                'trigger_method': 'on_re',
+                'trigger_condition': '涩图 来点涩图',
+                'brief_des': '发送涩图',
+                'detail_des': '发送涩图'
             },
             {
                 'func': 'r18',
@@ -34,36 +38,35 @@ __plugin_meta__ = PluginMetadata(
     }
 )
 
-create_file()
-pixiv = on_regex(r'^二次元$|^来点二次元$|^r18$|^来点\s*r18$', block=True, priority=10)
+pixiv = on_regex('^(二次元|涩图|色图|r18)$|^来点(二次元|涩图|色图|r18)$', block=True, priority=10)
 
 
 @pixiv.handle()
 async def pixiv_(event: Event):
     msg = event.get_plaintext()
     r18 = re.search('r18', msg)
-    result = await get_image(msg)
-    image_id = result['image_id']
-    image = result['image']
+    r16 = re.search('(涩图|色图)', msg)
     if r18:
-        message = MessageSegment.text(f"\n图片id：{image_id}\n"
-                                      f"图片链接：{image}")
-        await pixiv.send(message, at_sender=True)
-        await pixiv.send('请等待合成幻影坦克', at_sender=True)
-        image_path = requests.get(image)
-        img_on = await get_new_image()
-        img_in = await get_resize_image(io.BytesIO(image_path.content))
-        image = await color_car(img_on, img_in)
-        await pixiv.finish(MessageSegment.image(f"base64://{base64.b64encode(image.getvalue()).decode()}"))
+        await pixiv.send('r18请等待合成幻影坦克', at_sender=True)
+        message = await get_image(sort=2)
+        try:
+            result = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
+            message = result + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
+                                                   f"图片链接：{message['image_url']}")
+            await pixiv.finish(message)
+        except ActionFailed:
+            await pixiv.send("合成失败将只发送原图链接")
+            await pixiv.finish(MessageSegment.text(f"图片id：{message['image_id']}\n"
+                                                   f"图片链接：{message['image_url']}"))
+    elif r16:
+        message = await get_image(sort=1)
     else:
-        res = MessageSegment.image(image)
-        result = MessageSegment.text(f"图片id：{image_id}\n") + res
-        await pixiv.finish(result)
-
-
-setu = on_regex("^涩图$|^setu$|^无内鬼$|^色图$|^涩图tag.+$")
-
-
-@setu.handle()
-async def setu_():
-    await setu.finish("涩图功能暂时关闭重新构建代码中")
+        message = await get_image(sort=0)
+    try:
+        image = MessageSegment.image(message['image_url'])
+        result = MessageSegment.text(f"图片id：{message['image_id']}\n")
+        await pixiv.finish(image + result)
+    except ActionFailed:
+        await pixiv.send("图片发送失败可能被风控，将发送图片链接")
+        await pixiv.finish(MessageSegment.text(f"图片id：{message['image_id']}\n"
+                                               f"图片链接：{message['image_url']}"))
