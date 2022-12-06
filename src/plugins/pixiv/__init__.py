@@ -67,7 +67,8 @@ async def pixiv_(event: Event):
         data = await get_image(sort=0)
     try:
         image = MessageSegment.image(data['image_url'])
-        result = image + MessageSegment.text(f"图片id：{data['image_id']}")
+        result = image + MessageSegment.text(f"\n图片id：{data['image_id']}\n"
+                                             f"图片链接：{data['image_url']}")
         await pixiv.finish(result)
     except ActionFailed:
         await pixiv.send("图片发送失败可能被风控，将合成幻影坦克")
