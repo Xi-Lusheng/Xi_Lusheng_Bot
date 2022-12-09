@@ -1,11 +1,16 @@
 import base64
 import re
-import time
-
-from nonebot import on_regex
+import requests
+from nonebot import on_regex, on_command
+from nonebot.adapters import Message
+from nonebot.internal.params import ArgPlainText
+from nonebot.params import CommandArg
+from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.exception import ActionFailed
 from nonebot.adapters.onebot.v11 import Event, MessageSegment
 from nonebot.plugin import PluginMetadata
+from nonebot.typing import T_State
+
 from src.plugins.pixiv.constant import get_image, make_new_image
 
 __plugin_meta__ = PluginMetadata(
@@ -49,8 +54,11 @@ async def pixiv_(event: Event):
     r18 = re.search('r18', msg)
     r16 = re.search('(涩图|色图)', msg)
     if r18:
-        await pixiv.send('r18请等待合成幻影坦克', at_sender=True)
+        await pixiv.send('请等待合成幻影坦克', at_sender=True)
         data = await get_image(sort=2)
+    elif r16:
+        await pixiv.send('请等待合成幻影坦克', at_sender=True)
+        data = await get_image(sort=1)
         try:
             message = await make_new_image(data)
             image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
@@ -61,8 +69,6 @@ async def pixiv_(event: Event):
             await pixiv.send("合成失败将只发送原图链接")
             await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
                                                    f"图片链接：{data['image_url']}"))
-    elif r16:
-        data = await get_image(sort=1)
     else:
         data = await get_image(sort=0)
     try:
@@ -81,3 +87,68 @@ async def pixiv_(event: Event):
         await pixiv.send("幻影坦克合成失败，将发送图片原链接")
         await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
                                                f"图片链接：{data['image_url']}"))
+
+
+delete_image = on_command("删除图片", block=True, priority=10, permission=SUPERUSER)
+
+
+@delete_image.handle()
+async def delete_image_(state: T_State, msg: Message = CommandArg()):
+    if text := msg.get("text"):
+        state["param"] = text
+
+
+@delete_image.got("param", prompt="请输入图片的id")
+async def delete_image_(param: str = ArgPlainText("param")):
+    re_id = re.match(r"id(\d*)", param.replace(" ", ""))
+    url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
+    result = requests.delete(url)
+    if result.status_code == 204:
+        await delete_image.finish('删除成功')
+    elif result.json()['code'] == 404:
+        await delete_image.finish('没有找到该图片')
+    else:
+        await delete_image.finish('发生未知错误')
+
+
+update_image = on_command('修改分级', block=True, priority=10, permission=SUPERUSER)
+
+
+@update_image.handle()
+async def update_image_(state: T_State, msg: Message = CommandArg()):
+    if text := msg.get("text"):
+        state["param"] = text
+
+
+@update_image.got("param", prompt="请输入图片的id和分级")
+async def update_image_(foo: str = ArgPlainText("param")):
+    try:
+        re_message = re.match(r".*?id(?P<image_id>\d*).*?", foo.replace(" ", ""))
+        image_id = re_message.group('image_id')
+        re_sort = re.match(r".*?分级(?P<sort>(全龄|r16|r18)).*?", foo.replace(" ", ""))
+        sort = re_sort.group('sort')
+        print(sort)
+        if image_id and sort:
+            url = f"https://api.xilusheng.top/nonebot/pixiv//{image_id}/"
+            if sort == "r18":
+                sort = 2
+            elif sort == "r16":
+                sort = 1
+            elif sort == "全龄":
+                sort = 0
+            else:
+                await update_image.finish("请输入正确的分级参数，如：全龄|r16|r18")
+            data = {
+                "sort": sort
+            }
+            result = requests.patch(url, data=data)
+            if result.status_code == 200:
+                await update_image.finish('修改分级成功')
+            elif result.status_code == 400:
+                error = result.json()['data']
+                await update_image.finish(error)
+            else:
+                await update_image.finish("发生未知错误")
+        await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
+    except AttributeError:
+        await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
