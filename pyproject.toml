@@ -22,10 +22,9 @@ plugins = [
     "nonebot_plugin_baidutranslate",
     "nonebot_plugin_abstract",
     "nonebot_plugin_crazy_thursday",
-    "nonebot_plugin_gsmaterial",
     "nonebot_plugin_PicMenu",
 #    "nonebot_plugin_setu",
-    "nonebot_plugin_gspanel"
+
 ]
 plugin_dirs = ["src/plugins"]
 

@@ -1,5 +1,6 @@
-from nonebot import on_notice
-from nonebot.adapters.onebot.v11 import GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent, MessageSegment
+from nonebot import on_notice, on_message
+from nonebot.adapters.onebot.v11 import (GroupIncreaseNoticeEvent, GroupDecreaseNoticeEvent, MessageSegment,
+                                         PrivateMessageEvent, Bot)
 from nonebot.plugin import PluginMetadata
 from utils.config import Bot_NICKNAME
 from src.plugins.passive_skills.constant import get_image
@@ -76,3 +77,21 @@ async def decrease(event: GroupDecreaseNoticeEvent):
     user = event.get_user_id()
     msg = "{} 退出了群聊".format(user)
     await notice.finish(msg)
+
+
+test_friend = on_message(priority=1, block=False)
+
+
+@test_friend.handle()
+async def friends_(bot: Bot, event: PrivateMessageEvent):
+    user_id = event.get_user_id()
+    friend_list = await bot.get_friend_list()
+    id_list = []
+    for friends in friend_list:
+        friend_id = friends.get('user_id')
+        id_list.append(friend_id)
+    if int(user_id) in id_list:
+        pass
+    else:
+        await test_friend.finish('机器人功能并不对陌生人开放，请私聊机器人管理员添加好友')
+
