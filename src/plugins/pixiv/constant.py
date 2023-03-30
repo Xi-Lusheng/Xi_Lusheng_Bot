@@ -180,18 +180,17 @@ async def get_resize_image(filein):
     改变图片大小
     """
     file = Image.open(filein)
-    width, height = None, None
-    if file.size[0] or file.size[1] < 500:
-        width = int(file.size[0] * 3)
-        height = int(file.size[1] * 3)
-    elif file.size[0] or file.size[1] < 1000:
-        width = int(file.size[0] * 2)
-        height = int(file.size[1] * 2)
-    elif file.size[0] or file.size[1] < 1200:
-        width = int(file.size[0] * 1.4)
-        height = int(file.size[1] * 1.4)
-    elif file.size[0] or file.size[1] < 1800:
-        width = int(file.size[0] * 1.2)
-        height = int(file.size[1] * 1.2)
-    image = file.resize((width, height), Image.NEAREST).convert("RGBA")
-    return image
+    if file.size[0] * file.size[1] < 4000000:
+        double = round(4000000 / (file.size[0] * file.size[1]), 1)
+        width = int(file.size[0] * double)
+        height = int(file.size[1] * double)
+        image = file.resize((width, height), Image.NEAREST).convert("RGBA")
+        return image
+
+
+async def func(client, urls):
+    resp = await client.get(urls, headers={'Referer': 'http://www.weibo.com/', })
+    if resp.status_code == 200:
+        return resp.content
+    else:
+        return None
