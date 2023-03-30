@@ -4,7 +4,7 @@ import re
 import httpx
 import requests
 import unicodedata
-from nonebot import on_regex, on_command
+from nonebot import on_regex, on_command, logger
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.internal.params import ArgPlainText, Arg
@@ -37,6 +37,7 @@ __plugin_meta__ = PluginMetadata(
 from src.plugins.pixiv.url import Lolicon
 from src.plugins.pixiv.utils import customer_api, save
 from utils.config import Bot_NICKNAME
+from utils.utils_def import send_forward_msg_group
 
 # pixiv = on_regex('^(二次元|涩图|色图|r18)$|^来点(二次元|涩图|色图|r18)$', block=True, priority=10)
 #
@@ -209,33 +210,28 @@ async def setu_(bot: Bot, event: MessageEvent):
             msg, url_list = Lolicon(N, '', R18)
     msg += f"\n图片取自：{api}\n"
     await setu.send(msg, at_sender=True)
-
-    async with httpx.AsyncClient() as client:
-        task_list = []
-        for urls in url_list:
-            task = asyncio.create_task(func(client, urls))
-            task_list.append(task)
-        image_list = await asyncio.gather(*task_list)
+    try:
+        async with httpx.AsyncClient() as client:
+            task_list = []
+            for urls in url_list:
+                task = asyncio.create_task(func(client, urls))
+                task_list.append(task)
+            image_list = await asyncio.gather(*task_list)
+    except Exception as e:
+        logger.error(e)
+        await setu.finish(str(e), at_sender=True)
 
     image_list = [image for image in image_list if image]
 
     if image_list:
+        N = len(image_list)
         msg_list = []
         for i in range(N):
-            msg_list.append(
-                {
-                    "type": "node",
-                    "data": {
-                        "name": Bot_NICKNAME,
-                        "uin": event.self_id,
-                        "content": MessageSegment.image(file=image_list[i])
-                    }
-                }
-            )
+            msg_list.append(MessageSegment.image(file=image_list[i]))
         if isinstance(event, GroupMessageEvent):
-            await bot.send_group_forward_msg(group_id=event.group_id, messages=msg_list)
+            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
         else:
-            await bot.send_private_forward_msg(user_id=event.user_id, messages=msg_list)
+            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
     else:
         msg += "获取图片失败。"
         await setu.finish(msg, at_sender=True)
