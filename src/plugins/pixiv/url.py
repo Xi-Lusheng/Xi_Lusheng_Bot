@@ -42,7 +42,10 @@ def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
         if Lolicon_list:
             N = len(Lolicon_list)
             for i in range(N):
-                image_list.append(Lolicon_list[i]["urls"]["original"])
+                image_list.append({
+                    "pixiv_id": Lolicon_list[i]["pid"],
+                    "url": Lolicon_list[i]["urls"]["original"],
+                })
         else:
             msg = f"没有找到【{tag}】"
     else:

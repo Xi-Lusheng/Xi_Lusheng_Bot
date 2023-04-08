@@ -1,6 +1,9 @@
 import requests
 import io
-from typing import Tuple
+from base64 import b64encode
+from typing import Tuple, Union
+from io import BytesIO
+from pathlib import Path
 import numpy as np
 from PIL import Image, ImageEnhance, ImageDraw, ImageFont
 
@@ -16,16 +19,16 @@ async def get_image(sort: int) -> dict:
     }
 
 
-async def make_new_image(data: dict):
-    image_path = requests.get(data['image_url'])
+async def make_new_image(image):
+    img_in = None
+    if isinstance(image, str):
+        image_path = requests.get(image)
+        img_in = await get_resize_image(io.BytesIO(image_path.content))
+    elif isinstance(image, bytes):
+        img_in = await get_resize_image(io.BytesIO(image))
     img_on = await get_new_image()
-    img_in = await get_resize_image(io.BytesIO(image_path.content))
     new_image = await color_car(img_on, img_in)
-    return {
-        "image_id": data['image_id'],
-        "image_url": data['image_url'],
-        "new_image": new_image
-    }
+    return new_image
 
 
 np.seterr(divide="ignore", invalid="ignore")
@@ -166,7 +169,7 @@ async def gray_car(
 
 
 async def get_new_image(word="你就冲吧你", font_size=120):
-    new_img = Image.new('RGBA', (850, 850), (100, 100, 100))
+    new_img = Image.new('RGBA', (850, 850), (255, 255, 255))
     draw = ImageDraw.Draw(new_img)
     width, height = new_img.size
     font = ImageFont.truetype('simhei.ttf', size=font_size)
@@ -179,13 +182,18 @@ async def get_resize_image(filein):
     """
     改变图片大小
     """
-    file = Image.open(filein)
-    if file.size[0] * file.size[1] < 4000000:
-        double = round(4000000 / (file.size[0] * file.size[1]), 1)
-        width = int(file.size[0] * double)
-        height = int(file.size[1] * double)
-        image = file.resize((width, height), Image.NEAREST).convert("RGBA")
-        return image
+    image = Image.open(filein)
+    mode = "RGBA"
+    width, height = image.size
+    pixels = width * height
+    if pixels != 4000000:
+        ratio = (4000000 / pixels) ** 0.5
+        width = int(round(width * ratio))
+        height = int(round(height * ratio))
+        image = image.resize((width, height), Image.ANTIALIAS)
+    if image.mode != mode:
+        image = image.convert(mode)
+    return image
 
 
 async def func(client, urls):

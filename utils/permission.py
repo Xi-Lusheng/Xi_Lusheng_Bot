@@ -13,7 +13,9 @@ async def admin_permission(bot: Bot, event: GroupMessageEvent) -> bool:
         group_id=event.group_id,
         user_id=int(event.get_user_id()),
         no_cache=False))['role']
-    if user_role == 'owner' or user_role == 'admin' or event.get_user_id() in bot.config.superusers:
+    if user_role == 'owner' or user_role == 'admin':
+        return True
+    elif event.get_user_id() in bot.config.superusers:
         return True
 
 
@@ -32,5 +34,3 @@ async def get_group_role(bot: Bot, event: GroupMessageEvent, user_id: int) -> st
         no_cache=False
     ))['role']
     return role
-
-
