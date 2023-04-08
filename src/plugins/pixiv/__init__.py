@@ -165,6 +165,8 @@ async def setu_(bot: Bot, event: MessageEvent):
     msg = ''
     data = None
     url_list = []
+    new_list = []
+    msg_list = []
     cmd = event.get_plaintext()
     N = re.sub(r'^来|[张份].+$', '', cmd)
     N = N if N else 1
@@ -230,12 +232,10 @@ async def setu_(bot: Bot, event: MessageEvent):
     image_list = [image for image in image_list if image]
 
     if image_list:
-        N = len(image_list)
-        msg_list = []
-        for i in range(N):
+        for i in range(len(image_list)):
             image = await make_new_image(image_list[i])
-            for j in data:
-                j['image'] = image
+            new_list.append(image)
+        data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
         for x in data:
             msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
                             +
