@@ -1,22 +1,8 @@
 import requests
 import io
-from base64 import b64encode
-from typing import Tuple, Union
-from io import BytesIO
-from pathlib import Path
+from typing import Tuple
 import numpy as np
 from PIL import Image, ImageEnhance, ImageDraw, ImageFont
-
-
-async def get_image(sort: int) -> dict:
-    url = 'https://api.xilusheng.top/nonebot/pixiv/random/'
-    data = requests.get(url, params={"sort": sort}).json()
-    image_url = data['data'][0]['image']
-    image_id = data['data'][0]['id']
-    return {
-        "image_id": image_id,
-        "image_url": image_url,
-    }
 
 
 async def make_new_image(image):
@@ -202,3 +188,4 @@ async def func(client, urls):
         return resp.content
     else:
         return None
+

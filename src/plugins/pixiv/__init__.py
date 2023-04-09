@@ -1,12 +1,12 @@
 import asyncio
+import random
 import re
 import httpx
 import requests
 import unicodedata
-from src.plugins.pixiv.url import Lolicon
+from src.plugins.pixiv.url import Lolicon, Xi_Lusheng
 from src.plugins.pixiv.utils import customer_api, save
 from utils.config import Bot_NICKNAME
-from utils.permission import admin_permission
 from utils.utils_def import send_forward_msg_group
 from nonebot import on_regex, on_command, logger
 from nonebot.adapters import Message
@@ -17,7 +17,7 @@ from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, GroupMessageEvent
 from nonebot.plugin import PluginMetadata
 from nonebot.typing import T_State
-from src.plugins.pixiv.constant import get_image, make_new_image, func
+from src.plugins.pixiv.constant import make_new_image, func
 
 __plugin_meta__ = PluginMetadata(
     name='涩图',
@@ -37,59 +37,122 @@ __plugin_meta__ = PluginMetadata(
     }
 )
 
-# pixiv = on_regex('^(二次元|涩图|色图|r18)$|^来点(二次元|涩图|色图|r18)$', block=True, priority=10)
-#
-#
-# @pixiv.handle()
-# async def pixiv_(event: MessageEvent):
-#     msg = event.get_plaintext()
-#     r18 = re.search('r18', msg)
-#     r16 = re.search('(涩图|色图)', msg)
-#     if r18:
-#         await pixiv.send('请等待合成幻影坦克', at_sender=True)
-#         data = await get_image(sort=2)
-#         try:
-#             message = await make_new_image(data)
-#             image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
-#             result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
-#                                                  f"图片链接：{message['image_url']}")
-#             await pixiv.finish(result)
-#         except (ActionFailed, ValueError):
-#             await pixiv.send("合成失败将只发送原图链接")
-#             await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
-#                                                    f"图片链接：{data['image_url']}"))
-#     elif r16:
-#         await pixiv.send('请等待合成幻影坦克', at_sender=True)
-#         data = await get_image(sort=1)
-#         try:
-#             message = await make_new_image(data)
-#             image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
-#             result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
-#                                                  f"图片链接：{message['image_url']}")
-#             await pixiv.finish(result)
-#         except (ActionFailed, ValueError):
-#             await pixiv.send("合成失败将只发送原图链接")
-#             await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
-#                                                    f"图片链接：{data['image_url']}"))
-#     else:
-#         data = await get_image(sort=0)
-#         try:
-#             image = MessageSegment.image(data['image_url'])
-#             result = image + MessageSegment.text(f"\n图片id：{data['image_id']}\n"
-#                                                  f"图片链接：{data['image_url']}")
-#             await pixiv.finish(result)
-#         except ActionFailed:
-#             await pixiv.send("图片发送失败可能被风控，将合成幻影坦克")
-#             message = await make_new_image(data)
-#             image = MessageSegment.image(f"base64://{base64.b64encode(message['new_image'].getvalue()).decode()}")
-#             result = image + MessageSegment.text(f"\n图片id：{message['image_id']}\n"
-#                                                  f"图片链接：{message['image_url']}")
-#             await pixiv.finish(result)
-#         except ValueError:
-#             await pixiv.send("幻影坦克合成失败，将发送图片原链接")
-#             await pixiv.finish(MessageSegment.text(f"图片id：{data['image_id']}\n"
-#                                                    f"图片链接：{data['image_url']}"))
+setu = on_regex("^来.*[点张份].+$", priority=10, block=True)
 
+
+@setu.handle()
+async def setu_(bot: Bot, event: MessageEvent):
+    msg = ''
+    data = None
+    url_list = []
+    new_list = []
+    msg_list = []
+    R18 = 0
+    cmd = event.get_plaintext()
+    N = re.sub(r'^来|[张份].+$', '', cmd)
+    N = N if N else 1
+    try:
+        N = int(N)
+    except ValueError:
+        try:
+            N = int(unicodedata.numeric(N))
+        except (TypeError, ValueError):
+            N = 0
+
+    Tag = re.sub(r'^来|.*[张份]', '', cmd)
+    Tag = Tag[:-2] if (Tag.endswith("涩图") or Tag.endswith("色图")) else Tag
+    api = customer_api.get("url", None)
+
+    if Tag.startswith("r18"):
+        if api == "Xi_Lusheng API":
+            R18 = 2
+        elif api == "Lolicon API":
+            Tag = Tag[3:]
+            R18 = 1
+    else:
+        R18 = 0
+    try:
+        if api == "Lolicon API":
+            if Tag:
+                msg, data = Lolicon(N, Tag, R18)
+            else:
+                msg, data = Lolicon(N, '', R18)
+        elif api == "Xi_Lusheng API":
+            if R18 == 2:
+                msg, data = Xi_Lusheng(N, R18)
+            else:
+                R18 = random.randint(0, 1)
+                msg, data = Xi_Lusheng(N, R18)
+    except Exception as e:
+        await setu.finish(str(e), at_sender=True)
+
+    for i in data:
+        url_list.append(i['url'])
+
+    msg += f"\n图片取自：{api}"
+
+    await setu.send(msg, at_sender=True)
+
+    try:
+        async with httpx.AsyncClient() as client:
+            task_list = []
+            for urls in url_list:
+                task = asyncio.create_task(func(client, urls))
+                task_list.append(task)
+            image_list = await asyncio.gather(*task_list)
+    except Exception as e:
+        logger.error(e)
+        await setu.finish(str(e), at_sender=True)
+
+    image_list = [image for image in image_list if image]
+
+    if image_list:
+        if api == "Xi_Lusheng API" and R18 == 0:
+            pixiv = 'url'
+        else:
+            for i in range(len(image_list)):
+                image = await make_new_image(image_list[i])
+                new_list.append(image)
+            data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
+            pixiv = 'image'
+        for x in data:
+            msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
+                            +
+                            MessageSegment.image(x[pixiv])
+                            +
+                            MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
+                                                f"图片链接：{x['url']}"))
+        if isinstance(event, GroupMessageEvent):
+            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
+        else:
+            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
+    else:
+        await setu.finish("获取图片失败。", at_sender=True)
+
+
+set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, permission=SUPERUSER, priority=50, block=True)
+
+
+@set_api.got(
+    "api",
+    prompt=(
+            "请选择以下数字切换图库:\n"
+            "1 : Xi_Lusheng API (个人收藏用，不支持Tag筛选)\n"
+            "2 : Lolicon API (他人图库，容易请求超时)"
+    )
+)
+async def _(api: Message = Arg()):
+    api = str(api)
+    if api == "1":
+        customer_api["url"] = "Xi_Lusheng API"
+        save()
+        await set_api.finish("图库已切换为Xi_Lusheng API")
+    elif api == "2":
+        customer_api["url"] = "Lolicon API"
+        save()
+        await set_api.finish("图库已切换为Lolicon API")
+    else:
+        await set_api.finish("图库设置失败")
 
 delete_image = on_command("删除图片", block=True, priority=10, permission=SUPERUSER)
 
@@ -156,121 +219,4 @@ async def update_image_(foo: str = ArgPlainText("param")):
         await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
 
 
-setu = on_regex("^来.*[点张份].+$", priority=10, block=True)
 
-
-@setu.handle()
-async def setu_(bot: Bot, event: MessageEvent):
-    api = ''
-    msg = ''
-    data = None
-    url_list = []
-    new_list = []
-    msg_list = []
-    cmd = event.get_plaintext()
-    N = re.sub(r'^来|[张份].+$', '', cmd)
-    N = N if N else 1
-    try:
-        N = int(N)
-    except ValueError:
-        try:
-            N = int(unicodedata.numeric(N))
-        except (TypeError, ValueError):
-            N = 0
-
-    Tag = re.sub(r'^来|.*[张份]', '', cmd)
-    Tag = Tag[:-2] if (Tag.endswith("涩图") or Tag.endswith("色图")) else Tag
-
-    if Tag.startswith("r18"):
-        Tag = Tag[3:]
-        R18 = 1
-    else:
-        R18 = 0
-    try:
-        if isinstance(event, GroupMessageEvent):
-            if R18:
-                await setu.finish("涩涩是禁止事项！！")
-            else:
-                api = customer_api.get("url", None)
-                if api == "Lolicon API":
-                    if Tag:
-                        msg, data = Lolicon(N, Tag, R18)
-                    else:
-                        msg, data = Lolicon(N, '', R18)
-                elif api == "Xi_Lusheng API":
-                    msg, data = Lolicon(N, Tag, R18)
-        else:
-            api = customer_api.get("url", None)
-            if api == "Lolicon API":
-                if not Tag:
-                    msg, data = Lolicon(N, Tag, R18)
-                else:
-                    msg, data = Lolicon(N, '', R18)
-            elif api == "Xi_Lusheng API":
-                msg, data = Lolicon(N, '', R18)
-    except Exception as e:
-        await setu.finish(str(e), at_sender=True)
-
-    for i in data:
-        url_list.append(i['url'])
-
-    msg += f"\n图片取自：{api}"
-
-    await setu.send(msg, at_sender=True)
-
-    try:
-        async with httpx.AsyncClient() as client:
-            task_list = []
-            for urls in url_list:
-                task = asyncio.create_task(func(client, urls))
-                task_list.append(task)
-            image_list = await asyncio.gather(*task_list)
-    except Exception as e:
-        logger.error(e)
-        await setu.finish(str(e), at_sender=True)
-
-    image_list = [image for image in image_list if image]
-
-    if image_list:
-        for i in range(len(image_list)):
-            image = await make_new_image(image_list[i])
-            new_list.append(image)
-        data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
-        for x in data:
-            msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
-                            +
-                            MessageSegment.image(x['image'])
-                            +
-                            MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
-                                                f"图片链接：{x['url']}"))
-        if isinstance(event, GroupMessageEvent):
-            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
-        else:
-            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
-    else:
-        await setu.finish("获取图片失败。", at_sender=True)
-
-
-set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, permission=admin_permission, priority=50, block=True)
-
-
-@set_api.got(
-    "api",
-    prompt=(
-            "请选择以下数字切换图库:\n"
-            "1 : Xi_Lusheng API\n"
-            "2 : Lolicon API"
-    )
-)
-async def _(api: Message = Arg()):
-    api = str(api)
-    if api == "1":
-        customer_api["url"] = "Xi_Lusheng API"
-        save()
-        await set_api.finish("图库已切换为Xi_Lusheng API")
-    elif api == "2":
-        customer_api["url"] = "Lolicon API"
-        save()
-        await set_api.finish("图库已切换为Lolicon API")
-    else:
-        await set_api.finish("图库设置失败")
