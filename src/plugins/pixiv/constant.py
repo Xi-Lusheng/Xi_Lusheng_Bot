@@ -172,8 +172,8 @@ async def get_resize_image(filein):
     mode = "RGBA"
     width, height = image.size
     pixels = width * height
-    if pixels != 4000000:
-        ratio = (4000000 / pixels) ** 0.5
+    if pixels != 4840000:
+        ratio = (4840000 / pixels) ** 0.5
         width = int(round(width * ratio))
         height = int(round(height * ratio))
         image = image.resize((width, height), Image.ANTIALIAS)
