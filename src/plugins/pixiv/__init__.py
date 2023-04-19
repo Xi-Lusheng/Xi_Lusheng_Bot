@@ -71,6 +71,7 @@ async def setu_(bot: Bot, event: MessageEvent):
             R18 = 1
     else:
         R18 = 0
+
     try:
         if api == "Lolicon API":
             if Tag:
@@ -83,51 +84,48 @@ async def setu_(bot: Bot, event: MessageEvent):
             else:
                 R18 = random.randint(0, 1)
                 msg, data = Xi_Lusheng(N, R18)
-    except Exception as e:
-        await setu.finish(str(e), at_sender=True)
 
-    for i in data:
-        url_list.append(i['url'])
+        for i in data:
+            url_list.append(i['url'])
 
-    msg += f"\n图片取自：{api}"
+        msg += f"\n图片取自：{api}"
 
-    await setu.send(msg, at_sender=True)
+        await setu.send(msg, at_sender=True)
 
-    try:
         async with httpx.AsyncClient() as client:
             task_list = []
             for urls in url_list:
                 task = asyncio.create_task(func(client, urls))
                 task_list.append(task)
             image_list = await asyncio.gather(*task_list)
+
+        image_list = [image for image in image_list if image]
+
+        if image_list:
+            if api == "Xi_Lusheng API" and R18 == 0:
+                pixiv = 'url'
+            else:
+                for i in range(len(image_list)):
+                    image = await make_new_image(image_list[i])
+                    new_list.append(image)
+                data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
+                pixiv = 'image'
+
+            for x in data:
+                msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
+                                +
+                                MessageSegment.image(x[pixiv])
+                                +
+                                MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
+                                                    f"图片链接：{x['url']}"))
+
+            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
+
+        else:
+            await setu.finish("获取图片失败。", at_sender=True)
     except Exception as e:
-        logger.error(e)
-        await setu.finish(str(e), at_sender=True)
-
-    image_list = [image for image in image_list if image]
-
-    if image_list:
-        if api == "Xi_Lusheng API" and R18 == 0:
-            pixiv = 'url'
-        else:
-            for i in range(len(image_list)):
-                image = await make_new_image(image_list[i])
-                new_list.append(image)
-            data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
-            pixiv = 'image'
-        for x in data:
-            msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
-                            +
-                            MessageSegment.image(x[pixiv])
-                            +
-                            MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
-                                                f"图片链接：{x['url']}"))
-        if isinstance(event, GroupMessageEvent):
-            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
-        else:
-            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
-    else:
-        await setu.finish("获取图片失败。", at_sender=True)
+        logger.error("出现错误：" + str(e))
+        await setu.finish("出现错误：" + str(e), at_sender=True)
 
 
 set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, permission=SUPERUSER, priority=50, block=True)
@@ -141,7 +139,7 @@ set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, p
             "2 : Lolicon API (他人图库，容易请求超时)"
     )
 )
-async def _(api: Message = Arg()):
+async def _(api: Message = ArgPlainText("api")):
     api = str(api)
     if api == "1":
         customer_api["url"] = "Xi_Lusheng API"
@@ -153,6 +151,7 @@ async def _(api: Message = Arg()):
         await set_api.finish("图库已切换为Lolicon API")
     else:
         await set_api.finish("图库设置失败")
+
 
 delete_image = on_command("删除图片", block=True, priority=10, permission=SUPERUSER)
 
@@ -217,6 +216,3 @@ async def update_image_(foo: str = ArgPlainText("param")):
         await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
     except AttributeError:
         await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
-
-
-

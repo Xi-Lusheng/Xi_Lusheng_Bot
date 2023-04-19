@@ -29,25 +29,29 @@ withdraw = on_regex("撤回$", priority=5, block=True)
 @withdraw.handle()
 async def withdraw_(bot: Bot, event: GroupMessageEvent):
     get_re = GetRe(event.raw_message)
-    msg_id = (get_re.get_msg_id()).group(1)
-    at_id = (get_re.get_at_id()).group(1)
+    msg_id = get_re.msg_id.group(1)
+    at_id = get_re.at_id.group(1)
     if msg_id and at_id:
         user_role = await get_group_role(bot, event, at_id)
         bot_role = await get_group_role(bot, event, Bot_ID)
-        if bot_role == 'owner':
-            await bot.delete_msg(message_id=msg_id)
-            await withdraw.finish('已撤回')
-        elif bot_role == 'admin':
-            if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
-                await withdraw.finish(f'{Bot_NICKNAME}没有足够的权限撤回ta的消息哦')
-            else:
+        try:
+            if bot_role == 'owner':
                 await bot.delete_msg(message_id=msg_id)
                 await withdraw.finish('已撤回')
-        else:
-            if at_id == Bot_ID:
-                await bot.delete_msg(message_id=msg_id)
+            elif bot_role == 'admin':
+                if user_role == bot_role and at_id != Bot_ID or user_role == 'owner':
+                    await withdraw.finish(f'{Bot_NICKNAME}没有足够的权限撤回ta的消息哦')
+                else:
+                    await bot.delete_msg(message_id=msg_id)
+                    await withdraw.finish('已撤回')
             else:
-                await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+                if at_id == Bot_ID:
+                    await bot.delete_msg(message_id=msg_id)
+                    await withdraw.finish('已撤回')
+                else:
+                    await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+        except Exception as e:
+            await withdraw.finish(str(e), at_sender=True)
     else:
         await withdraw.finish('命令不规范，请先使用回复选择需要撤回的消息')
 

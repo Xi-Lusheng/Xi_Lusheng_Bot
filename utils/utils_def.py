@@ -115,30 +115,7 @@ class GetRe:
 
     def __init__(self, raw_message):
         self._raw_message = raw_message
-        self._get_msg_id = re.compile(r"\[CQ:reply,id=(-?\d*)]")
-        self._get_at_id = re.compile(r"\[CQ:at,qq=(\d*)]")
-        self._get_time = re.compile(r"(time|cd|day)(\d*)")
+        self.msg_id = re.search(r"\[CQ:reply,id=(-?\d*)]", self._raw_message)
+        self.at_id = re.search(r"\[CQ:at,qq=(\d*)]", self._raw_message)
+        self.get_time = re.search(r"(time|cd|day)(\d*)", self._raw_message)
 
-    def get_msg_id(self):
-        """
-        获取消息id
-        :return: re变量，使用group获取
-        """
-        msg_id = self._get_msg_id.search(self._raw_message)
-        return msg_id
-
-    def get_at_id(self):
-        """
-        获取@人qq号
-        :return: re变量，使用group获取
-        """
-        at_id = self._get_at_id.search(self._raw_message)
-        return at_id
-
-    def get_time(self):
-        """
-        获取消息中的time时间
-        :return: re变量，使用group获取
-        """
-        cd = self._get_time.search(self._raw_message)
-        return cd

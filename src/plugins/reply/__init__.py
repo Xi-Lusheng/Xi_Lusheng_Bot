@@ -1,4 +1,5 @@
 import random
+from nonebot.internal.matcher import Matcher
 from nonebot.plugin.on import on_message, on_notice, on_regex, on_command
 from nonebot.rule import to_me
 from nonebot.adapters.onebot.v11 import (
@@ -9,9 +10,9 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     PokeNotifyEvent,
 )
-from .constant import get_chat_result, get_message, utils_get_chat_result
-from data.reply_data.msg_data import *
+from src.plugins.reply.constant import get_chat_result, get_message, utils_get_chat_result
 import re
+from data.reply_data.msg_data import *
 from nonebot.plugin import PluginMetadata
 from utils.config import COMMAND_START
 
@@ -71,8 +72,8 @@ util_msg = on_message(priority=99, block=True)
 
 
 @util_msg.handle()
-async def util_msg_(event: MessageEvent):
-    if random.randint(0, 10) > 7:
+async def util_msg_(matcher: Matcher, event: MessageEvent):
+    if random.randint(0, 10) <= 7:
         msg = str(event.get_message())
         if msg[0] == f'{COMMAND_START}':
             pass
@@ -81,8 +82,6 @@ async def util_msg_(event: MessageEvent):
             result = await utils_get_chat_result(msg)
             if result:
                 await util_msg.finish(Message(result))
-            else:
-                pass
 
 
 _2d = on_command('二次元浓度', priority=5, block=True)
@@ -91,25 +90,22 @@ _2d = on_command('二次元浓度', priority=5, block=True)
 @_2d.handle()
 async def _2d_():
     if random.randint(0, 10) > 7:
-        try:
-            await _2d.send(Message(str(random.randint(0, 100)) + '%'))
-        except:
-            await _2d.send(Message(random.choice(potency)))
+        await _2d.send(Message(str(random.randint(0, 100)) + '%'))
     else:
         await _2d.send(Message(random.choice(potency)))
 
 
 # 低概率复读
-repeat = on_message(priority=97, block=False)
+repeat = on_message(priority=97, block=True)
 
 
 @repeat.handle()
-async def repeat_(event: MessageEvent):
+async def repeat_(matcher: Matcher, event: MessageEvent):
     if random.randint(0, 500) == 500:
         msg = str(event.get_message())
         await repeat.send(Message(msg))
     else:
-        pass
+        matcher.stop_propagation()
 
 
 xun = on_regex('^寻$', priority=5, block=True)

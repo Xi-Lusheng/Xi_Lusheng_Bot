@@ -24,7 +24,7 @@ help_ = on_command('info', aliases={'信息'}, priority=1, block=True)
 
 
 @help_.handle()
-async def _(bot: Bot, event: Event):
+async def _():
     await help_.finish('欢迎使用汐鹿生制作的机器人，发送 ‘菜单’ 查看机器人目前支持的功能\n'
                        '======================\n'
                        '此项目基于 Nonebot2 和 go-cqhttp 开发Q群机器人\n'

@@ -2,7 +2,7 @@ import re
 import random
 from nonebot.adapters.onebot.v11 import MessageEvent
 from nonebot import on_message
-from .constant import get_emo
+from src.plugins.emoticon.constant import get_emo
 
 
 emo = on_message(priority=96, block=False)
@@ -16,8 +16,7 @@ async def emo_(event: MessageEvent):
         emo_path = await get_emo(msg)
         if emo_path:
             await emo.finish(emo_path)
-        else:
-            pass
+
 
 
 

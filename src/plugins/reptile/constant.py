@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 
 async def get_sakura(text):
     try:
-        url = f'https://www.yhdmw.com/comicsearch/-------------.html?wd={text}&submit='
-        util_url = 'https://www.yhdmw.com/'
+        url = f'https://www.vdm6.com/search/-------------.html?wd={text}'
+        util_url = 'https://www.vdm6.com/'
         resp = requests.get(url)
         main_page = BeautifulSoup(resp.text, 'html.parser')
         src = main_page.find_all('a', attrs={
@@ -23,7 +23,7 @@ async def get_sakura(text):
             }
             data.append(dic)
         return data
-    except TypeError:
-        return '快点告诉我你想看什么！'
+    except Exception as e:
+        return e
 
 
