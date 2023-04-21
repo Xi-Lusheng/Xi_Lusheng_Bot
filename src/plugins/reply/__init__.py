@@ -72,7 +72,7 @@ util_msg = on_message(priority=99, block=True)
 
 
 @util_msg.handle()
-async def util_msg_(matcher: Matcher, event: MessageEvent):
+async def util_msg_(event: MessageEvent):
     if random.randint(0, 10) <= 7:
         msg = str(event.get_message())
         if msg[0] == f'{COMMAND_START}':

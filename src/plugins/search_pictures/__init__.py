@@ -95,8 +95,8 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
         img_url = img_url[0]
         data = await get_anime(img_url)
         await anime.send('开始识别.....请不要进行其它操作', at_sender=True)
-        if isinstance(None, data):
-            await anime.finish('发生了奇怪的错误，再试一次？', at_sender=True)
+        if isinstance(data, str):
+            await anime.finish(data, at_sender=True)
         else:
             msg = []
             for datas in data:

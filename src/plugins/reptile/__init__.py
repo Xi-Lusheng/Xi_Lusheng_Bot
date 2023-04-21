@@ -39,7 +39,7 @@ async def sakura_(matcher: Matcher, args: Message = CommandArg()):
 async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainText('name')):
     results = (await get_sakura(str(name)))[:over_list]
     await sakura.send("开始查找.....请不要进行其它操作")
-    if isinstance(Exception, results):
+    if isinstance(results, Exception):
         await sakura.finish("错误：" + str(results))
     else:
         msg = []

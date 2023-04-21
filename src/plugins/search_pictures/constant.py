@@ -52,4 +52,4 @@ async def get_anime(image: str):
             data.append(dic)
         return data
     else:
-        return None
+        return '发生了奇怪的错误，再试一次？'
