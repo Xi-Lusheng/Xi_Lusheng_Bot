@@ -96,16 +96,15 @@ async def _2d_():
 
 
 # 低概率复读
-repeat = on_message(priority=97, block=True)
+repeat = on_message(priority=97, block=False)
 
 
 @repeat.handle()
 async def repeat_(matcher: Matcher, event: MessageEvent):
     if random.randint(0, 500) == 500:
         msg = str(event.get_message())
-        await repeat.send(Message(msg))
-    else:
         matcher.stop_propagation()
+        await repeat.send(Message(msg))
 
 
 xun = on_regex('^寻$', priority=5, block=True)
