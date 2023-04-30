@@ -1,5 +1,4 @@
 import asyncio
-import random
 import re
 import httpx
 import requests
@@ -14,7 +13,7 @@ from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.internal.params import ArgPlainText, Arg
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
-from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, GroupMessageEvent
+from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent
 from nonebot.plugin import PluginMetadata
 from nonebot.typing import T_State
 from src.plugins.pixiv.constant import make_new_image, func
@@ -62,15 +61,20 @@ async def setu_(bot: Bot, event: MessageEvent):
     Tag = re.sub(r'^来|.*[张份]', '', cmd)
     Tag = Tag[:-2] if (Tag.endswith("涩图") or Tag.endswith("色图")) else Tag
     api = customer_api.get("url", None)
+    get_r18 = customer_api.get("r18", False)
 
-    if Tag.startswith("r18"):
-        if api == "Xi_Lusheng API":
-            R18 = 2
-        elif api == "Lolicon API":
-            Tag = Tag[3:]
-            R18 = 1
+    if get_r18:
+        if Tag.startswith("r18"):
+            if api == "Xi_Lusheng API":
+                R18 = 2
+            elif api == "Lolicon API":
+                Tag = Tag[3:]
+                R18 = 1
+        else:
+            R18 = 0
     else:
         R18 = 0
+        await setu.send(f"管理员关闭了r18功能哦，但是{Bot_NICKNAME}还是为你准备了非r18的涩图")
 
     try:
         if api == "Lolicon API":
@@ -127,7 +131,7 @@ async def setu_(bot: Bot, event: MessageEvent):
         await setu.finish("出现错误：" + str(e), at_sender=True)
 
 
-set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, permission=SUPERUSER, priority=50, block=True)
+set_api = on_regex("^(设置|切换|指定)图库$", permission=SUPERUSER, priority=50, block=True)
 
 
 @set_api.got(
@@ -140,15 +144,35 @@ set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, p
 )
 async def _(api: Message = Arg()):
     if str(api) == "1":
-        customer_api["url"] = "Xi_Lusheng API"
+        name = "Xi_Lusheng API"
+        customer_api["url"] = name
         save()
-        await set_api.finish("图库已切换为Xi_Lusheng API")
+        await set_api.finish(f"图库已切换为{name}")
     elif str(api) == "2":
-        customer_api["url"] = "Lolicon API"
+        name = "Lolicon API"
+        customer_api["url"] = name
         save()
-        await set_api.finish("图库已切换为Lolicon API")
+        await set_api.finish(f"图库已切换为{name}")
     else:
-        await set_api.finish("图库设置失败")
+        await set_api.finish(f"图库设置失败")
+
+
+set_r18 = on_regex("^(开启|关闭)r18$", permission=SUPERUSER, priority=50, block=True)
+
+
+@set_r18.handle()
+async def _(event: MessageEvent):
+    r18 = event.get_plaintext()
+    if r18[:2] == "开启":
+        customer_api["r18"] = True
+        save()
+        await set_r18.finish(f"r18已{r18[:2]}")
+    elif r18[:2] == "关闭":
+        customer_api["r18"] = False
+        save()
+        await set_r18.finish(f"r18已{r18[:2]}")
+    else:
+        await set_r18.finish(f"r18设置失败")
 
 
 delete_image = on_command("删除图片", block=True, priority=10, permission=SUPERUSER)
