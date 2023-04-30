@@ -82,8 +82,7 @@ async def setu_(bot: Bot, event: MessageEvent):
             if R18 == 2:
                 msg, data = Xi_Lusheng(N, R18)
             else:
-                R18 = random.randint(0, 1)
-                msg, data = Xi_Lusheng(N, R18)
+                msg, data = Xi_Lusheng(N, 1)
 
         for i in data:
             url_list.append(i['url'])
@@ -139,13 +138,12 @@ set_api = on_command("设置图库", aliases={"切换图库", "指定图库"}, p
             "2 : Lolicon API (他人图库，容易请求超时)"
     )
 )
-async def _(api: Message = ArgPlainText("api")):
-    api = str(api)
-    if api == "1":
+async def _(api: Message = Arg()):
+    if str(api) == "1":
         customer_api["url"] = "Xi_Lusheng API"
         save()
         await set_api.finish("图库已切换为Xi_Lusheng API")
-    elif api == "2":
+    elif str(api) == "2":
         customer_api["url"] = "Lolicon API"
         save()
         await set_api.finish("图库已切换为Lolicon API")
