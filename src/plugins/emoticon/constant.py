@@ -3,7 +3,7 @@ from path.path import emo_data_path
 import os
 
 
-async def get_emo(msg: str) -> MessageSegment or str:
+async def get_emo(msg: str) -> MessageSegment:
     if len(msg) < 20:
         names = os.listdir(emo_data_path)
         for i in names:

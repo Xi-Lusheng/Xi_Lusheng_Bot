@@ -1,11 +1,13 @@
 import requests
 import io
-from typing import Tuple
 import numpy as np
 from PIL import Image, ImageEnhance, ImageDraw, ImageFont
+from typing import Tuple, Union
+from io import BytesIO
+from pathlib import Path
 
 
-async def make_new_image(image):
+async def make_new_image(image: Union[str, bytes, BytesIO, Path]) -> BytesIO:
     img_in = None
     if isinstance(image, str):
         image_path = requests.get(image)
@@ -53,7 +55,7 @@ async def color_car(
         w_color: float = 0.5,
         b_color: float = 0.7,
         chess: bool = False,
-):
+) -> BytesIO:
     """
     发彩色车
     :param w_img: 白色背景下的图片
@@ -118,7 +120,7 @@ async def gray_car(
         wlight: float = 1.0,
         blight: float = 0.3,
         chess: bool = False,
-):
+) -> BytesIO:
     """
     发黑白车
     :param wimg: 白色背景下的图片
@@ -154,7 +156,7 @@ async def gray_car(
     return output
 
 
-async def get_new_image(word="你就冲吧你", font_size=120):
+async def get_new_image(word: str = "你就冲吧你", font_size: int = 120) -> Image:
     new_img = Image.new('RGBA', (850, 850), (255, 255, 255))
     draw = ImageDraw.Draw(new_img)
     width, height = new_img.size
@@ -164,11 +166,11 @@ async def get_new_image(word="你就冲吧你", font_size=120):
     return new_img
 
 
-async def get_resize_image(filein):
+async def get_resize_image(file: Image) -> Image:
     """
     改变图片大小
     """
-    image = Image.open(filein)
+    image = Image.open(file)
     mode = "RGBA"
     width, height = image.size
     pixels = width * height

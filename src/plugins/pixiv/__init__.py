@@ -63,8 +63,8 @@ async def setu_(bot: Bot, event: MessageEvent):
     api = customer_api.get("url", None)
     get_r18 = customer_api.get("r18", False)
 
-    if get_r18:
-        if Tag.startswith("r18"):
+    if Tag.startswith("r18"):
+        if get_r18:
             if api == "Xi_Lusheng API":
                 R18 = 2
             elif api == "Lolicon API":
@@ -72,9 +72,9 @@ async def setu_(bot: Bot, event: MessageEvent):
                 R18 = 1
         else:
             R18 = 0
+            await setu.send(f"管理员关闭了r18功能哦，但是{Bot_NICKNAME}还是为你准备了非r18的涩图")
     else:
         R18 = 0
-        await setu.send(f"管理员关闭了r18功能哦，但是{Bot_NICKNAME}还是为你准备了非r18的涩图")
 
     try:
         if api == "Lolicon API":
@@ -175,26 +175,27 @@ async def _(event: MessageEvent):
         await set_r18.finish(f"r18设置失败")
 
 
-delete_image = on_command("删除图片", block=True, priority=10, permission=SUPERUSER)
+delete_image = on_regex("^删除图片$", block=True, priority=10, permission=SUPERUSER)
 
 
 @delete_image.handle()
 async def delete_image_(state: T_State, msg: Message = CommandArg()):
+    print(msg.get("text"))
     if text := msg.get("text"):
         state["param"] = text
 
 
-@delete_image.got("param", prompt="请输入图片的id")
-async def delete_image_(param: str = ArgPlainText("param")):
-    re_id = re.match(r"id(\d*)", param.replace(" ", ""))
-    url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
-    result = requests.delete(url)
-    if result.status_code == 204:
-        await delete_image.finish('删除成功')
-    elif result.json()['code'] == 404:
-        await delete_image.finish('没有找到该图片')
-    else:
-        await delete_image.finish('发生未知错误')
+# @delete_image.got("param", prompt="请输入图片的id")
+# async def delete_image_(param: str = ArgPlainText("param")):
+#     re_id = re.match(r"id(\d*)", param.replace(" ", ""))
+    # url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
+    # result = requests.delete(url)
+    # if result.status_code == 204:
+    #     await delete_image.finish('删除成功')
+    # elif result.json()['code'] == 404:
+    #     await delete_image.finish('没有找到该图片')
+    # else:
+    #     await delete_image.finish('发生未知错误')
 
 
 update_image = on_command('修改分级', block=True, priority=10, permission=SUPERUSER)

@@ -3,7 +3,7 @@ from utils.config import sauce_key, num_res, pictures_number
 from saucenao_api import SauceNao
 
 
-async def get_search_pictures(image: str):
+async def get_search_pictures(image: str) -> list[dict[str]]:
     sauce = SauceNao(sauce_key, numres=num_res)
     results = sauce.from_url(image)
     data = []
@@ -20,7 +20,7 @@ async def get_search_pictures(image: str):
     return data
 
 
-async def get_anime(image: str):
+async def get_anime(image: str) -> list[dict[str]] or str:
     url = "https://api.trace.moe/search?anilistInfo&url={}".format(image)
     anime_json = (requests.get(url)).json()
     if not anime_json["error"]:

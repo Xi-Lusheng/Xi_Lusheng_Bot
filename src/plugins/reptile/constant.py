@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-async def get_sakura(text):
+async def get_sakura(text: str) -> list[dict[str]] or Exception:
     try:
         url = f'https://www.vdm6.com/search/-------------.html?wd={text}'
         util_url = 'https://www.vdm6.com/'
