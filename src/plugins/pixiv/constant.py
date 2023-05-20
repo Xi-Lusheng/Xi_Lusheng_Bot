@@ -173,7 +173,7 @@ async def get_resize_image(file: Image) -> Image:
     image = Image.open(file)
     width, height = image.size
     if width * height != 4840000:
-        ratio = (4840000 / width * height) ** 0.5
+        ratio = (4840000 / (width * height)) ** 0.5
         width = int(round(width * ratio))
         height = int(round(height * ratio))
         image = image.resize((width, height), Image.ANTIALIAS)
