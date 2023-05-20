@@ -142,6 +142,7 @@ dmypy.json
 /accounts/
 /data/gsmaterial/
 /data/gspanel/
+/data/setu/
 /menu_config/config.json
 /loliconImages/
 /data/lolicon.db

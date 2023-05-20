@@ -171,17 +171,13 @@ async def get_resize_image(file: Image) -> Image:
     改变图片大小
     """
     image = Image.open(file)
-    mode = "RGBA"
     width, height = image.size
-    pixels = width * height
-    if pixels != 4840000:
-        ratio = (4840000 / pixels) ** 0.5
+    if width * height != 4840000:
+        ratio = (4840000 / width * height) ** 0.5
         width = int(round(width * ratio))
         height = int(round(height * ratio))
         image = image.resize((width, height), Image.ANTIALIAS)
-    if image.mode != mode:
-        image = image.convert(mode)
-    return image
+    return image.convert("RGBA")
 
 
 async def func(client, urls):

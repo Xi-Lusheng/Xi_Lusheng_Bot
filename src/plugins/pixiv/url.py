@@ -45,6 +45,7 @@ def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
                 image_list.append({
                     "pixiv_id": Lolicon_list[i]["pid"],
                     "url": Lolicon_list[i]["urls"]["original"],
+                    "r18": Lolicon_list[i]["r18"]
                 })
         else:
             msg = f"没有找到【{tag}】"
@@ -80,7 +81,8 @@ def Xi_Lusheng(N: int = 1, R18: int = 0):
             for i in range(N):
                 image_list.append({
                     "pixiv_id": Lusheng_list[i]["id"],
-                    "url": Lusheng_list[i]["image"]
+                    "url": Lusheng_list[i]["image"],
+                    "r18": True if Lusheng_list[i]["sort"] == "r18" else False
                 })
         else:
             msg = f"没有找到图片"

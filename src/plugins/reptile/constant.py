@@ -13,13 +13,10 @@ async def get_sakura(text: str) -> list[dict[str]] or Exception:
         })
         data = []
         for i in src:
-            href = util_url + i.get('href').strip('/')
-            title = i.get('title')
-            img = util_url + i.get('data-original').strip('/')
             dic = {
-                'name': title,
-                'url': href,
-                'img': img
+                'name': util_url + i.get('href').strip('/'),
+                'url': i.get('title'),
+                'img': util_url + i.get('data-original').strip('/')
             }
             data.append(dic)
         return data

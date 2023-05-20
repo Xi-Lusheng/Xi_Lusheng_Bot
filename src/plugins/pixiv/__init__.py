@@ -13,7 +13,7 @@ from nonebot.adapters.onebot.v11.bot import Bot
 from nonebot.internal.params import ArgPlainText, Arg
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
-from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent
+from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, GroupMessageEvent, PrivateMessageEvent
 from nonebot.plugin import PluginMetadata
 from nonebot.typing import T_State
 from src.plugins.pixiv.constant import make_new_image, func
@@ -41,12 +41,6 @@ setu = on_regex("^来.*[点张份].+$", priority=10, block=True)
 
 @setu.handle()
 async def setu_(bot: Bot, event: MessageEvent):
-    msg = ''
-    data = None
-    url_list = []
-    new_list = []
-    msg_list = []
-    R18 = 0
     cmd = event.get_plaintext()
     N = re.sub(r'^来|[张份].+$', '', cmd)
     N = N if N else 1
@@ -60,9 +54,14 @@ async def setu_(bot: Bot, event: MessageEvent):
 
     Tag = re.sub(r'^来|.*[张份]', '', cmd)
     Tag = Tag[:-2] if (Tag.endswith("涩图") or Tag.endswith("色图")) else Tag
-    api = customer_api.get("url", None)
-    get_r18 = customer_api.get("r18", False)
 
+    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
+    if id_ not in customer_api.keys():
+        customer_api[f"{id_}"] = {}
+    api = customer_api[f"{id_}"].get("url", "Xi_Lusheng API")
+    get_r18 = customer_api[f"{id_}"].get("r18", False)
+
+    R18 = 0
     if Tag.startswith("r18"):
         if get_r18:
             if api == "Xi_Lusheng API":
@@ -77,6 +76,8 @@ async def setu_(bot: Bot, event: MessageEvent):
         R18 = 0
 
     try:
+        msg = ''
+        data = None
         if api == "Lolicon API":
             if Tag:
                 msg, data = Lolicon(N, Tag, R18)
@@ -88,11 +89,8 @@ async def setu_(bot: Bot, event: MessageEvent):
             else:
                 msg, data = Xi_Lusheng(N, 1)
 
-        for i in data:
-            url_list.append(i['url'])
-
+        url_list = [i['url'] for i in data]
         msg += f"\n图片取自：{api}"
-
         await setu.send(msg, at_sender=True)
 
         async with httpx.AsyncClient() as client:
@@ -104,23 +102,26 @@ async def setu_(bot: Bot, event: MessageEvent):
 
         image_list = [image for image in image_list if image]
 
+        # 是否发送幻影坦克
         if image_list:
             if api == "Xi_Lusheng API" and R18 == 0:
                 pixiv = 'url'
             else:
-                for i in range(len(image_list)):
-                    image = await make_new_image(image_list[i])
-                    new_list.append(image)
+                new_list = [await make_new_image(image_list[i]) for i in range(len(image_list))]
                 data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
                 pixiv = 'image'
 
+            msg_list = []
             for x in data:
-                msg_list.append(MessageSegment.text("芝士幻影坦克：\n")
-                                +
-                                MessageSegment.image(x[pixiv])
-                                +
-                                MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
-                                                    f"图片链接：{x['url']}"))
+                msg_list.append(
+                    MessageSegment.text("芝士幻影坦克：\n")
+                    +
+                    MessageSegment.image(x[pixiv])
+                    +
+                    MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
+                                        f"r18：{x['r18']}\n"
+                                        f"图片链接：{x['url']}")
+                )
 
             await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
 
@@ -131,7 +132,7 @@ async def setu_(bot: Bot, event: MessageEvent):
         await setu.finish("出现错误：" + str(e), at_sender=True)
 
 
-set_api = on_regex("^(设置|切换|指定)图库$", permission=SUPERUSER, priority=50, block=True)
+set_api = on_regex("^(设置|切换|指定)图库$", priority=50, block=True)
 
 
 @set_api.got(
@@ -142,15 +143,20 @@ set_api = on_regex("^(设置|切换|指定)图库$", permission=SUPERUSER, prior
             "2 : Lolicon API (他人图库，容易请求超时)"
     )
 )
-async def _(api: Message = Arg()):
+async def _(event: MessageEvent, api: Message = Arg()):
+    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
+
+    if id_ not in customer_api.keys():
+        customer_api[f"{id_}"] = {}
+
     if str(api) == "1":
         name = "Xi_Lusheng API"
-        customer_api["url"] = name
+        customer_api[f"{id_}"]["url"] = name
         save()
         await set_api.finish(f"图库已切换为{name}")
     elif str(api) == "2":
         name = "Lolicon API"
-        customer_api["url"] = name
+        customer_api[f"{id_}"]["url"] = name
         save()
         await set_api.finish(f"图库已切换为{name}")
     else:
@@ -163,12 +169,17 @@ set_r18 = on_regex("^(开启|关闭)r18$", permission=SUPERUSER, priority=50, bl
 @set_r18.handle()
 async def _(event: MessageEvent):
     r18 = event.get_plaintext()
+    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
+
+    if id_ not in customer_api.keys():
+        customer_api[f"{id_}"] = {}
+
     if r18[:2] == "开启":
-        customer_api["r18"] = True
+        customer_api[f"{id_}"]["r18"] = True
         save()
         await set_r18.finish(f"r18已{r18[:2]}")
     elif r18[:2] == "关闭":
-        customer_api["r18"] = False
+        customer_api[f"{id_}"]["r18"] = False
         save()
         await set_r18.finish(f"r18已{r18[:2]}")
     else:
@@ -188,14 +199,14 @@ async def delete_image_(state: T_State, msg: Message = CommandArg()):
 # @delete_image.got("param", prompt="请输入图片的id")
 # async def delete_image_(param: str = ArgPlainText("param")):
 #     re_id = re.match(r"id(\d*)", param.replace(" ", ""))
-    # url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
-    # result = requests.delete(url)
-    # if result.status_code == 204:
-    #     await delete_image.finish('删除成功')
-    # elif result.json()['code'] == 404:
-    #     await delete_image.finish('没有找到该图片')
-    # else:
-    #     await delete_image.finish('发生未知错误')
+# url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
+# result = requests.delete(url)
+# if result.status_code == 204:
+#     await delete_image.finish('删除成功')
+# elif result.json()['code'] == 404:
+#     await delete_image.finish('没有找到该图片')
+# else:
+#     await delete_image.finish('发生未知错误')
 
 
 update_image = on_command('修改分级', block=True, priority=10, permission=SUPERUSER)
