@@ -181,7 +181,7 @@ async def get_resize_image(file: Image) -> Image:
 
 
 async def func(client, urls):
-    resp = await client.get(urls, headers={'Referer': 'http://www.weibo.com/', })
+    resp = await client.get(urls)
     if resp.status_code == 200:
         return resp.content
     else:
