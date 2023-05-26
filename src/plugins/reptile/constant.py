@@ -14,9 +14,9 @@ async def get_sakura(text: str) -> list[dict[str]] or Exception:
         data = []
         for i in src:
             dic = {
-                'name': util_url + i.get('href').strip('/'),
-                'url': i.get('title'),
-                'img': util_url + i.get('data-original').strip('/')
+                'url': util_url + i.get('href').strip('/'),
+                'name': i.get('title'),
+                'img': i.get('data-original')
             }
             data.append(dic)
         return data
