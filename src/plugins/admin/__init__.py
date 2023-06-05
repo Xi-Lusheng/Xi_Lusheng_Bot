@@ -1,5 +1,7 @@
 from nonebot import on_regex
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.exception import FinishedException
+
 from utils.config import Bot_NICKNAME, Bot_ID
 from utils.permission import get_group_role
 from nonebot.plugin import PluginMetadata
@@ -50,6 +52,8 @@ async def withdraw_(bot: Bot, event: GroupMessageEvent):
                     await withdraw.finish('已撤回')
                 else:
                     await withdraw.finish(f'{Bot_NICKNAME}没有足够权限哦，让群主大大给{Bot_NICKNAME}个管理员权限吧')
+        except FinishedException:
+            raise
         except Exception as e:
             await withdraw.finish(str(e), at_sender=True)
     else:

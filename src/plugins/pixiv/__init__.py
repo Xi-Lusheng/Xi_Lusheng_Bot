@@ -3,6 +3,7 @@ import re
 import httpx
 import requests
 import unicodedata
+from nonebot.exception import FinishedException
 from src.plugins.pixiv.url import Lolicon, Xi_Lusheng
 from src.plugins.pixiv.utils import customer_api, save
 from utils.config import Bot_NICKNAME
@@ -127,6 +128,8 @@ async def setu_(bot: Bot, event: MessageEvent):
 
         else:
             await setu.finish("获取图片失败。", at_sender=True)
+    except FinishedException:
+        raise
     except Exception as e:
         logger.error("出现错误：" + str(e))
         await setu.finish("出现错误：" + str(e), at_sender=True)

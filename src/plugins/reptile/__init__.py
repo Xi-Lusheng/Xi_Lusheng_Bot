@@ -1,4 +1,5 @@
 from nonebot.adapters.onebot.v11 import Message, MessageSegment, Bot, MessageEvent
+from nonebot.exception import FinishedException
 from nonebot.matcher import Matcher
 from nonebot.params import CommandArg, ArgPlainText
 from nonebot.plugin.on import on_command
@@ -66,5 +67,7 @@ async def get_sakura_comic(bot: Bot, event: MessageEvent, name: str = ArgPlainTe
                     event,
                     name=f"{Bot_NICKNAME}",
                     msgs=msg if msg else ["没有在樱花找到这个动漫呢，换词姿势搜索试试"])
+        except FinishedException:
+            raise
         except Exception as e:
             await sakura.send('樱花插件错误，请尽快联系汐鹿生修复:' + str(e))
