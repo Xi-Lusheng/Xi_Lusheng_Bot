@@ -31,7 +31,7 @@ def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
             msg += f"{Bot_NICKNAME}被禁止单次发送超过10张色图...但是，{Bot_NICKNAME}为你准备了一张随机{tag[5:]}色图。"
     else:
         N = 1
-        msg += f"{Bot_NICKNAME}接收到了奇怪的数量参数，不过{Bot_NICKNAME}送你一张随机{'r18' if R18 else ''}{tag[5:]}色图。"
+        msg += f"{Bot_NICKNAME}接收到了奇怪的数量参数，不过{Bot_NICKNAME}送你一张随机{'r18' if R18 == 1 else ''}{tag[5:]}色图。"
     logger.info(f"正在从 Lolicon API 获取图片。")
     resp = httpx.get(f"https://api.lolicon.app/setu/v2?num={N}&r18={R18}{tag}")
     if resp.status_code == 200:
@@ -68,7 +68,7 @@ def Xi_Lusheng(N: int = 1, R18: int = 0):
             msg += f"{Bot_NICKNAME}被禁止单次发送超过10张色图...但是，{Bot_NICKNAME}为你准备了一张随机色图。"
     else:
         N = 1
-        msg += f"{Bot_NICKNAME}接收到了奇怪的数量参数，不过{Bot_NICKNAME}送你一张随机{'r18' if R18 else ''}色图。"
+        msg += f"{Bot_NICKNAME}接收到了奇怪的数量参数，不过{Bot_NICKNAME}送你一张随机{'r18' if R18 == 2 else ''}色图。"
     logger.info(f"正在从 Xi_Lusheng API 获取图片。")
     resp = httpx.get(f"https://api.xilusheng.top/nonebot/pixiv/random/?num={N}&sort={R18}")
     if resp.status_code == 200:
