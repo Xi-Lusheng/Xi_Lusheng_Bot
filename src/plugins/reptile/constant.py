@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 
 async def get_sakura(text: str) -> list[dict[str]] or Exception:
     try:
-        url = f'https://www.vdm6.com/search/-------------.html?wd={text}'
-        util_url = 'https://www.vdm6.com/'
+        url = f'https://www.yhdm52.com/search/-------------.html?wd={text}'
+        util_url = 'https://www.yhdm52.com/'
         resp = requests.get(url)
         main_page = BeautifulSoup(resp.text, 'html.parser')
         src = main_page.find_all('a', attrs={
