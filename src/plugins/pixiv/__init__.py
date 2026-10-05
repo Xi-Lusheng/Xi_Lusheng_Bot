@@ -4,14 +4,14 @@ import httpx
 import requests
 import unicodedata
 from nonebot.exception import FinishedException
-from src.plugins.pixiv.url import Lolicon, Xi_Lusheng
+from src.plugins.pixiv.url import lolicon, xi_lusheng
 from src.plugins.pixiv.utils import customer_api, save
 from utils.config import Bot_NICKNAME
 from utils.utils_def import send_forward_msg_group
 from nonebot import on_regex, on_command, logger
 from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11.bot import Bot
-from nonebot.internal.params import ArgPlainText, Arg
+from nonebot.params import ArgPlainText, Arg
 from nonebot.params import CommandArg
 from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, GroupMessageEvent, PrivateMessageEvent
@@ -81,14 +81,14 @@ async def setu_(bot: Bot, event: MessageEvent):
         data = None
         if api == "Lolicon API":
             if Tag:
-                msg, data = Lolicon(N, Tag, R18)
+                msg, data = lolicon(N, Tag, R18)
             else:
-                msg, data = Lolicon(N, '', R18)
+                msg, data = lolicon(N, '', R18)
         elif api == "Xi_Lusheng API":
             if R18 == 2:
-                msg, data = Xi_Lusheng(N, R18)
+                msg, data = xi_lusheng(N, R18)
             else:
-                msg, data = Xi_Lusheng(N, 1)
+                msg, data = xi_lusheng(N, 1)
 
         url_list = [i['url'] for i in data]
         msg += f"\n图片取自：{api}"

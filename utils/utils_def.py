@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import List, Union
 from nonebot import logger
 from nonebot.adapters.onebot.v11 import MessageEvent, GroupMessageEvent, Bot, Message, MessageSegment
-import ujson as json
 import json
 from path.path import scold_data_path
 import re

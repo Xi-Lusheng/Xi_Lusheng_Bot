@@ -1,28 +1,72 @@
-import requests
+"""幻影坦克（Mirage Tank）图片合成。
+
+算法来自 https://github.com/Aloxaf/MirageTankGo/blob/master/MTCore/MTCore.py
+原先整个文件被注释掉，导致 pixiv 插件的 `make_new_image` 导入失败；
+这里按 Pillow >= 10 与 numpy 2.x 的 API 恢复实现。
+"""
+
 import io
-import numpy as np
-from PIL import Image, ImageEnhance, ImageDraw, ImageFont
-from typing import Tuple, Union
+import os
 from io import BytesIO
 from pathlib import Path
+from typing import Tuple, Union
+
+import httpx
+import numpy as np
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+
+# 避免 0 除等运算在 numpy 2.x 下刷屏
+np.seterr(divide="ignore", invalid="ignore")
+
+# Pillow 10 起移除了 Image.ANTIALIAS / Image.NEAREST 等顶层重采样常量
+LANCZOS = Image.Resampling.LANCZOS
+NEAREST = Image.Resampling.NEAREST
+
+# 字体候选：优先中文字体，避免裸文件名 'simhei.ttf' 在部分环境下找不到
+_FONT_CANDIDATES = (
+    r"C:\Windows\Fonts\simhei.ttf",
+    r"C:\Windows\Fonts\msyh.ttc",
+    r"C:\Windows\Fonts\msyhbd.ttc",
+    r"C:\Windows\Fonts\simsun.ttc",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/System/Library/Fonts/PingFang.ttc",
+)
+
+
+def _load_font(size: int):
+    """按候选列表加载字体，全部失败时退回 Pillow 内置字体。"""
+    for candidate in _FONT_CANDIDATES:
+        if os.path.exists(candidate):
+            try:
+                return ImageFont.truetype(candidate, size=size)
+            except OSError:
+                continue
+    try:
+        return ImageFont.truetype("simhei.ttf", size=size)
+    except OSError:
+        return ImageFont.load_default()
 
 
 async def make_new_image(image: Union[str, bytes, BytesIO, Path]) -> BytesIO:
     img_in = None
     if isinstance(image, str):
-        image_path = requests.get(image)
-        img_in = await get_resize_image(io.BytesIO(image_path.content))
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(image)
+        img_in = await get_resize_image(io.BytesIO(resp.content))
     elif isinstance(image, bytes):
         img_in = await get_resize_image(io.BytesIO(image))
+    elif isinstance(image, (BytesIO, Path)):
+        img_in = await get_resize_image(image)
+
+    if img_in is None:
+        raise ValueError("make_new_image 收到不支持的图片类型")
+
     img_on = await get_new_image()
     new_image = await color_car(img_on, img_in)
     return new_image
 
 
-np.seterr(divide="ignore", invalid="ignore")
-
-
-# ------来自 https://github.com/Aloxaf/MirageTankGo/blob/master/MTCore/MTCore.py----------------
 async def resize_image(
         img_out: Image.Image, img_in: Image.Image, mode
 ) -> Tuple[Image.Image, Image.Image]:
@@ -30,7 +74,7 @@ async def resize_image(
     统一图像大小
     """
     _b_img = img_in.convert(mode)
-    _w_img = img_out.convert(mode).resize(_b_img.size, Image.NEAREST)
+    _w_img = img_out.convert(mode).resize(_b_img.size, NEAREST)
 
     w_width, w_height = _w_img.size
     b_width, b_height = _b_img.size
@@ -111,6 +155,7 @@ async def color_car(
 
     output = io.BytesIO()
     Image.fromarray(colors.astype("uint8")).convert("RGBA").save(output, format="png")
+    output.seek(0)
     return output
 
 
@@ -153,20 +198,21 @@ async def gray_car(
 
     output = io.BytesIO()
     Image.fromarray(pixels.astype("uint8")).convert("RGBA").save(output, format="png")
+    output.seek(0)
     return output
 
 
-async def get_new_image(word: str = "你就冲吧你", font_size: int = 120) -> Image:
+async def get_new_image(word: str = "你就冲吧你", font_size: int = 120) -> Image.Image:
     new_img = Image.new('RGBA', (850, 850), (255, 255, 255))
     draw = ImageDraw.Draw(new_img)
     width, height = new_img.size
-    font = ImageFont.truetype('simhei.ttf', size=font_size)
+    font = _load_font(font_size)
     w, h = len(word) * font_size, font_size
     draw.text(xy=((width - w) / 2, (height - h) / 2), text=word, fill=(120, 120, 120), font=font)
     return new_img
 
 
-async def get_resize_image(file: Image) -> Image:
+async def get_resize_image(file) -> Image.Image:
     """
     改变图片大小
     """
@@ -176,14 +222,13 @@ async def get_resize_image(file: Image) -> Image:
         ratio = (4840000 / (width * height)) ** 0.5
         width = int(round(width * ratio))
         height = int(round(height * ratio))
-        image = image.resize((width, height), Image.ANTIALIAS)
+        image = image.resize((width, height), LANCZOS)
     return image.convert("RGBA")
 
 
-async def func(client, urls):
+async def func(client: httpx.AsyncClient, urls: str):
+    """下载图片，成功返回 bytes，失败返回 None。"""
     resp = await client.get(urls)
     if resp.status_code == 200:
         return resp.content
-    else:
-        return None
-
+    return None

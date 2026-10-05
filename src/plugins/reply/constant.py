@@ -1,12 +1,11 @@
+import json
 import random
 import re
+
 import requests
+
 from path.path import AnimeThesaurus, Util_Json
 from utils.config import Bot_MASTER, Bot_NICKNAME
-try:
-    import ujson as json
-except ModuleNotFoundError:
-    import json
 
 
 # 从字典里返还消息

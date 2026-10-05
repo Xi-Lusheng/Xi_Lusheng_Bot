@@ -1,5 +1,4 @@
 from nonebot import on_command
-from nonebot.adapters.onebot.v11 import Bot, Event
 from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(

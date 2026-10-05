@@ -1,10 +1,6 @@
+import json
 import os
 from pathlib import Path
-
-try:
-    import ujson as json
-except ModuleNotFoundError:
-    import json
 
 path = Path() / "data" / "setu"
 file = path / "customer_api.json"

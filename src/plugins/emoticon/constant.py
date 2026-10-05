@@ -1,4 +1,4 @@
-from nonebot.adapters.onebot.v11 import MessageSegment
+from nonebot.adapters import MessageSegment
 from path.path import emo_data_path
 import os
 

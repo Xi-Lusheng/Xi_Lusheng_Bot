@@ -1,15 +1,14 @@
-from nonebot import on_regex
-from nonebot.exception import FinishedException
-from nonebot.params import CommandArg
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message, MessageSegment
-from nonebot.plugin import PluginMetadata
 import asyncio
-from playwright.async_api import async_playwright
+
+from nonebot import logger, on_regex
+from nonebot.adapters import MessageSegment
+from nonebot.exception import FinishedException
+from nonebot.plugin import PluginMetadata
 
 __plugin_meta__ = PluginMetadata(
     name='d2',
-    description='暂时维护中，勿用',
-    usage='',
+    description='命运2日报（需要可选依赖 playwright）',
+    usage='日报',
     extra={
         'menu_data': [
             {
@@ -17,7 +16,7 @@ __plugin_meta__ = PluginMetadata(
                 'trigger_method': 'on_re',
                 'trigger_condition': '日报',
                 'brief_des': '查看d2日报',
-                'detail_des': '暂时维护中，勿用'
+                'detail_des': '需要安装 playwright 及 chromium 后才可用'
             },
         ],
         'menu_template': 'default'
@@ -29,6 +28,16 @@ today = on_regex("^日报$", priority=5, block=True)
 
 @today.handle()
 async def today_():
+    # playwright 是可选依赖，缺失时给出明确提示而不是抛 NameError
+    try:
+        from playwright.async_api import async_playwright
+    except ImportError:
+        await today.finish(
+            "「日报」功能不可用：当前环境未安装 playwright。\n"
+            "如需启用：pip install playwright && playwright install chromium"
+        )
+        return
+
     try:
         async with async_playwright() as playwright:
             browser = await playwright.chromium.launch(args=["--start-maximized"])
@@ -40,13 +49,12 @@ async def today_():
             await asyncio.sleep(3)
             # 截图并保存为文件
             screenshot_bytes = await page.screenshot(type="png", full_page=True)
-            await today.finish(MessageSegment.image(screenshot_bytes))
-            # 关闭浏览器
             await context.close()
             await browser.close()
+            await today.finish(MessageSegment.image(screenshot_bytes))
     # finish基于FinishedException结束事件，所以需要忽略此异常
     except FinishedException:
         raise
     except Exception as e:
-        print(repr(e))
+        logger.opt(exception=e).warning("获取 destiny2 日报失败")
         await today.finish(f"获取日报失败: {str(e)}")

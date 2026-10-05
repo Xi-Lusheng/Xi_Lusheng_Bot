@@ -1,33 +1,39 @@
-[tool.poetry]
+[project]
 name = "Xi_Lusheng"
 version = "0.1.0"
 description = "Xi_Lusheng"
-authors = []
 readme = "README.md"
+requires-python = ">=3.10, <4.0"
+dependencies = [
+    "nonebot2[fastapi]>=2.4.4,<3.0.0",
+    "nonebot-adapter-onebot>=2.4.6,<3.0.0",
+    "nonebot-adapter-console>=0.9.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "httpx>=0.27.0",
+    "requests>=2.31.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.7.3"
-nonebot2 = "^2.0.0-beta.1"
-
-[tool.poetry.dev-dependencies]
-nb-cli = "^0.6.0"
+[project.optional-dependencies]
+# 不要在这里放 nb-cli：nb-cli 需要 textual>=5.3，而 nonebot-adapter-console
+# 依赖的 nonechat 需要 textual<4，两者无法共存，会导致 `uv sync` 解析失败。
+dev = []
 
 [tool.nonebot]
-plugins = [
-    "nonebot_plugin_gocqhttp",
-    "nonebot_plugin_apscheduler",
-    "nonebot_plugin_ygo",
-    "nonebot_plugin_repeater",
-    "nonebot_plugin_remake",
-    "nonebot_plugin_baidutranslate",
-    "nonebot_plugin_abstract",
-    "nonebot_plugin_crazy_thursday",
-    "nonebot_plugin_PicMenu",
-#    "nonebot_plugin_setu",
-
-]
 plugin_dirs = ["src/plugins"]
+builtin_plugins = []
+
+[tool.nonebot.adapters]
+"@local" = []
+
+[tool.nonebot.plugins]
+"@local" = []
+
+[tool.uv]
+# 本项目不是可安装的发行包（bot.py 直接运行 + src/plugins），
+# 告诉 uv 只同步依赖，不要构建/安装项目本身。
+package = false
 
 [build-system]
-requires = ["poetry_core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

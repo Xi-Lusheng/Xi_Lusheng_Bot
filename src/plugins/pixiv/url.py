@@ -1,15 +1,12 @@
+import json
+
 import httpx
+from nonebot import logger
 
 from utils.config import Bot_NICKNAME
 
-try:
-    import ujson as json
-except ModuleNotFoundError:
-    import json
-from nonebot import logger
 
-
-def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
+def lolicon(N: int = 1, Tag: str = "", R18: int = 0):
     if Tag:
         tag_list = Tag.strip().split()
         tag = "&tag="
@@ -37,15 +34,15 @@ def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
     if resp.status_code == 200:
         resp = resp.text
         resp = ''.join(x for x in resp if x.isprintable())
-        Lolicon_list = json.loads(resp)["data"]
+        lolicon_list = json.loads(resp)["data"]
         image_list = []
-        if Lolicon_list:
-            N = len(Lolicon_list)
+        if lolicon_list:
+            N = len(lolicon_list)
             for i in range(N):
                 image_list.append({
-                    "pixiv_id": Lolicon_list[i]["pid"],
-                    "url": Lolicon_list[i]["urls"]["original"],
-                    "r18": Lolicon_list[i]["r18"]
+                    "pixiv_id": lolicon_list[i]["pid"],
+                    "url": lolicon_list[i]["urls"]["original"],
+                    "r18": lolicon_list[i]["r18"]
                 })
         else:
             msg = f"没有找到【{tag}】"
@@ -56,7 +53,7 @@ def Lolicon(N: int = 1, Tag: str = "", R18: int = 0):
     return msg, image_list
 
 
-def Xi_Lusheng(N: int = 1, R18: int = 0):
+def xi_lusheng(N: int = 1, R18: int = 0):
     msg = ""
     if 1 <= N <= 10:
         msg += f"{Bot_NICKNAME}为你准备了{N}张随机{'r18' if R18 == 2 else ''}色图。"
@@ -74,15 +71,15 @@ def Xi_Lusheng(N: int = 1, R18: int = 0):
     if resp.status_code == 200:
         resp = resp.text
         resp = ''.join(x for x in resp if x.isprintable())
-        Lusheng_list = json.loads(resp)["data"]
+        lusheng_list = json.loads(resp)["data"]
         image_list = []
-        if Lusheng_list:
-            N = len(Lusheng_list)
+        if lusheng_list:
+            N = len(lusheng_list)
             for i in range(N):
                 image_list.append({
-                    "pixiv_id": Lusheng_list[i]["id"],
-                    "url": Lusheng_list[i]["image"],
-                    "r18": True if Lusheng_list[i]["sort"] == "r18" else False
+                    "pixiv_id": lusheng_list[i]["id"],
+                    "url": lusheng_list[i]["image"],
+                    "r18": True if lusheng_list[i]["sort"] == "r18" else False
                 })
         else:
             msg = f"没有找到图片"
