@@ -150,3 +150,13 @@ dmypy.json
 /docker-compose.yml
 /Dockerfile
 /test.py
+
+# 自动更新的运行时文件（失败标记，由 scripts/auto_update.sh 写入）
+/.update_status.json
+/.update_status.json.bad
+
+# 本地运行/调试残留（日志轮转文件、NapCat 登录二维码截图）
+/.ncd-nonebot2.log*
+/napcat-qrcode*.png
+/ncd-*.log*
+

@@ -1,23 +1,38 @@
+"""涩图插件入口。
+
+【整体流程】
+    用户「来3张白丝涩图」
+        -> _parse_count / _parse_tag 拆出 (数量, 标签)
+        -> url.lolicon() 只负责拿到图片元数据（pid / url / r18）
+        -> constant.func() 并发下载原图 bytes
+        -> constant.make_new_image() 逐张合成幻影坦克（CPU 活，丢线程池）
+        -> utils_def.send_forward_msg_group() 合并转发成一张卡片
+
+【本文件的职责】只做"解析输入 → 调度模块 → 拼消息"的编排，不写像素、不写 HTTP。
+"""
+
 import asyncio
 import re
-import httpx
-import requests
 import unicodedata
+
+import httpx
+from nonebot import logger, on_regex
+from nonebot.adapters.onebot.v11 import (
+    Bot,
+    GroupMessageEvent,
+    MessageEvent,
+    MessageSegment,
+)
 from nonebot.exception import FinishedException
-from src.plugins.pixiv.url import lolicon, xi_lusheng
-from src.plugins.pixiv.utils import customer_api, save
+from nonebot.permission import SUPERUSER
+from nonebot.plugin import PluginMetadata
+
+from src.plugins.pixiv.constant import func, make_new_image
+from src.plugins.pixiv.url import DEFAULT_API_NAME, lolicon
+from src.plugins.pixiv.utils import customer_api, get_session
+from src.plugins.pixiv.utils import set_r18 as set_session_r18
 from utils.config import Bot_NICKNAME
 from utils.utils_def import send_forward_msg_group
-from nonebot import on_regex, on_command, logger
-from nonebot.adapters import Message
-from nonebot.adapters.onebot.v11.bot import Bot
-from nonebot.params import ArgPlainText, Arg
-from nonebot.params import CommandArg
-from nonebot.permission import SUPERUSER
-from nonebot.adapters.onebot.v11 import MessageSegment, MessageEvent, GroupMessageEvent, PrivateMessageEvent
-from nonebot.plugin import PluginMetadata
-from nonebot.typing import T_State
-from src.plugins.pixiv.constant import make_new_image, func
 
 __plugin_meta__ = PluginMetadata(
     name='涩图',
@@ -40,216 +55,155 @@ __plugin_meta__ = PluginMetadata(
 setu = on_regex("^来.*[点张份].+$", priority=10, block=True)
 
 
+# ---------------------------------------------------------------------------
+# 输入解析
+# ---------------------------------------------------------------------------
+
+# 「来3张白丝涩图」-> 先砍前缀"来"和"张…"之后的部分，正好剩下数量
+_COUNT_RE = re.compile(r"^来|[张份].+$")
+# 同一个句子 -> 砍掉"来…张/份/点"，剩下的就是标签
+_TAG_RE = re.compile(r"^来|.*[张份]")
+
+
+def _parse_count(cmd: str) -> int:
+    """从「来3张白丝涩图」解析出 3。
+
+    【效果】三条兜底路径，任何一种都能走到：
+        纯数字        "3"    -> int("3") = 3
+        中文数字      "三"    -> unicodedata.numeric => 3
+        识别不了      "好多"  -> 0
+
+    返回 0 不用在这里报错：url._build_notice 会把"数量 < 1"统一
+    变成「接收到了奇怪的数量参数…送你一张随机涩图」，文案只有一处。
+    """
+
+    raw = _COUNT_RE.sub("", cmd)
+    if not raw:
+        return 1
+
+    try:
+        return int(raw)
+    except ValueError:
+        pass
+
+    try:
+        return int(unicodedata.numeric(raw))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _parse_tag(cmd: str) -> str:
+    """从「来3张白丝涩图」解析出标签「白丝」。
+
+    【效果】"来3张白丝涩图" -> "白丝"；"来一份r18萝莉色图" -> "r18萝莉"。
+    结尾只剥「涩图/色图」两个字，中间的 tag 原样保留（由 url._parse_tag 按空格切分）。
+    """
+
+    tag = _TAG_RE.sub("", cmd).strip()
+    if tag.endswith(("涩图", "色图")):
+        tag = tag[:-2]
+    return tag.strip()
+
+
+def _session_id(event: MessageEvent) -> str:
+    """配置隔离用的 key：群聊取群号，私聊取 QQ 号。"""
+
+    if isinstance(event, GroupMessageEvent):
+        return str(event.group_id)
+    return event.get_user_id()
+
+
+# ---------------------------------------------------------------------------
+# 发图
+# ---------------------------------------------------------------------------
+
 @setu.handle()
 async def setu_(bot: Bot, event: MessageEvent):
     cmd = event.get_plaintext()
-    N = re.sub(r'^来|[张份].+$', '', cmd)
-    N = N if N else 1
-    try:
-        N = int(N)
-    except ValueError:
-        try:
-            N = int(unicodedata.numeric(N))
-        except (TypeError, ValueError):
-            N = 0
+    count = _parse_count(cmd)
+    tag = _parse_tag(cmd)
 
-    Tag = re.sub(r'^来|.*[张份]', '', cmd)
-    Tag = Tag[:-2] if (Tag.endswith("涩图") or Tag.endswith("色图")) else Tag
+    # get_session：取不到（第一次用）就补一份默认配置并落盘，
+    # 所以这里不再需要"手动 if id_ not in customer_api"再赋值。
+    session_id = _session_id(event)
+    session = get_session(session_id)
+    api = session.get("url", DEFAULT_API_NAME)
 
-    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
-    if id_ not in customer_api.keys():
-        customer_api[f"{id_}"] = {}
-    api = customer_api[f"{id_}"].get("url", "Xi_Lusheng API")
-    get_r18 = customer_api[f"{id_}"].get("r18", False)
-
-    R18 = 0
-    if Tag.startswith("r18"):
-        if get_r18:
-            if api == "Xi_Lusheng API":
-                R18 = 2
-            elif api == "Lolicon API":
-                Tag = Tag[3:]
-                R18 = 1
+    r18 = 0
+    if tag.startswith("r18"):
+        if session.get("r18"):
+            tag = tag[3:].strip()
+            r18 = 1
         else:
-            R18 = 0
-            await setu.send(f"管理员关闭了r18功能哦，但是{Bot_NICKNAME}还是为你准备了非r18的涩图")
-    else:
-        R18 = 0
+            await setu.send(
+                f"管理员关闭了r18功能哦，但是{Bot_NICKNAME}还是为你准备了非r18的涩图"
+            )
 
     try:
-        msg = ''
-        data = None
-        if api == "Lolicon API":
-            if Tag:
-                msg, data = lolicon(N, Tag, R18)
-            else:
-                msg, data = lolicon(N, '', R18)
-        elif api == "Xi_Lusheng API":
-            if R18 == 2:
-                msg, data = xi_lusheng(N, R18)
-            else:
-                msg, data = xi_lusheng(N, 1)
+        # lolicon() 现在保证第二项永远是 list：失败时是 []，不会返回 None。
+        msg, images = lolicon(count, tag, r18)
+        if not images:
+            await setu.finish(msg, at_sender=True)
 
-        url_list = [i['url'] for i in data]
-        msg += f"\n图片取自：{api}"
-        await setu.send(msg, at_sender=True)
+        await setu.send(f"{msg}\n图片取自：{api}", at_sender=True)
 
-        async with httpx.AsyncClient() as client:
-            task_list = []
-            for urls in url_list:
-                task = asyncio.create_task(func(client, urls))
-                task_list.append(task)
-            image_list = await asyncio.gather(*task_list)
+        # 并发下载。func 内部已经吃掉了异常并返回 None，不会中断 gather。
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            raw_list = await asyncio.gather(*(func(client, i["url"]) for i in images))
 
-        image_list = [image for image in image_list if image]
-
-        # 是否发送幻影坦克
-        if image_list:
-            if api == "Xi_Lusheng API" and R18 == 0:
-                pixiv = 'url'
-            else:
-                new_list = [await make_new_image(image_list[i]) for i in range(len(image_list))]
-                data = [dict(d, **{'image': i}) for i, d in zip(new_list, data)]
-                pixiv = 'image'
-
-            msg_list = []
-            for x in data:
-                msg_list.append(
-                    MessageSegment.text("芝士幻影坦克：\n")
-                    +
-                    MessageSegment.image(x[pixiv])
-                    +
-                    MessageSegment.text(f"\n图片id：{x['pixiv_id']}\n"
-                                        f"r18：{x['r18']}\n"
-                                        f"图片链接：{x['url']}")
-                )
-
-            await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}', msgs=[msg for msg in msg_list if msg])
-
-        else:
+        # 关键：把 (元数据, 原图) 成对过滤，而不是先过滤出 image_list 再 zip。
+        # 原实现 zip(new_list, data) 在两图之间夹着失败项时会整体错位，
+        # 结果就是"幻影坦克的图和下方显示的 pixiv_id/链接对不上"。
+        downloaded = [(info, raw) for info, raw in zip(images, raw_list) if raw]
+        if not downloaded:
             await setu.finish("获取图片失败。", at_sender=True)
+
+        msg_list = []
+        for info, raw in downloaded:
+            # make_new_image 是同步的 numpy/PIL 计算，单张约几百毫秒；
+            # 丢进线程池逐张做，既不阻塞事件循环，也不会同时持有全部原图+输出图而爆内存。
+            mirage = await asyncio.to_thread(make_new_image, raw)
+            msg_list.append(
+                MessageSegment.text("芝士幻影坦克：\n")
+                + MessageSegment.image(mirage)
+                + MessageSegment.text(
+                    f"\n图片id：{info['pixiv_id']}\n"
+                    f"r18：{info['r18']}\n"
+                    f"图片链接：{info['url']}"
+                )
+            )
+
+        await send_forward_msg_group(
+            bot, event, name=f"{Bot_NICKNAME}", msgs=[m for m in msg_list if m]
+        )
+
     except FinishedException:
+        # setu.finish 就是靠这个异常中断 handler 的，必须原样放行
         raise
     except Exception as e:
-        logger.error("出现错误：" + str(e))
+        # 用 exception 而不是 error：保留完整堆栈，
+        # 否则线上只会看到"出现错误：某个字符串"，根本定位不到是哪一步。
+        logger.exception("涩图流程出错")
         await setu.finish("出现错误：" + str(e), at_sender=True)
 
 
-set_api = on_regex("^(设置|切换|指定)图库$", priority=50, block=True)
-
-
-@set_api.got(
-    "api",
-    prompt=(
-            "请选择以下数字切换图库:\n"
-            "1 : Xi_Lusheng API (个人收藏用，不支持Tag筛选)\n"
-            "2 : Lolicon API (他人图库，容易请求超时)"
-    )
-)
-async def _(event: MessageEvent, api: Message = Arg()):
-    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
-
-    if id_ not in customer_api.keys():
-        customer_api[f"{id_}"] = {}
-
-    if str(api) == "1":
-        name = "Xi_Lusheng API"
-        customer_api[f"{id_}"]["url"] = name
-        save()
-        await set_api.finish(f"图库已切换为{name}")
-    elif str(api) == "2":
-        name = "Lolicon API"
-        customer_api[f"{id_}"]["url"] = name
-        save()
-        await set_api.finish(f"图库已切换为{name}")
-    else:
-        await set_api.finish(f"图库设置失败")
-
+# ---------------------------------------------------------------------------
+# r18 开关
+# ---------------------------------------------------------------------------
 
 set_r18 = on_regex("^(开启|关闭)r18$", permission=SUPERUSER, priority=50, block=True)
 
 
 @set_r18.handle()
 async def _(event: MessageEvent):
-    r18 = event.get_plaintext()
-    id_ = str(event.group_id) if isinstance(event, GroupMessageEvent) else event.get_user_id()
+    text = event.get_plaintext()
+    session_id = _session_id(event)
 
-    if id_ not in customer_api.keys():
-        customer_api[f"{id_}"] = {}
-
-    if r18[:2] == "开启":
-        customer_api[f"{id_}"]["r18"] = True
-        save()
-        await set_r18.finish(f"r18已{r18[:2]}")
-    elif r18[:2] == "关闭":
-        customer_api[f"{id_}"]["r18"] = False
-        save()
-        await set_r18.finish(f"r18已{r18[:2]}")
+    if text.startswith("开启"):
+        set_session_r18(session_id, True)
+        await set_r18.finish("r18已开启")
+    elif text.startswith("关闭"):
+        set_session_r18(session_id, False)
+        await set_r18.finish("r18已关闭")
     else:
-        await set_r18.finish(f"r18设置失败")
-
-
-delete_image = on_regex("^删除图片$", block=True, priority=10, permission=SUPERUSER)
-
-
-@delete_image.handle()
-async def delete_image_(state: T_State, msg: Message = CommandArg()):
-    print(msg.get("text"))
-    if text := msg.get("text"):
-        state["param"] = text
-
-
-# @delete_image.got("param", prompt="请输入图片的id")
-# async def delete_image_(param: str = ArgPlainText("param")):
-#     re_id = re.match(r"id(\d*)", param.replace(" ", ""))
-# url = f"https://api.xilusheng.top/nonebot/pixiv/{re_id.group(1)}/"
-# result = requests.delete(url)
-# if result.status_code == 204:
-#     await delete_image.finish('删除成功')
-# elif result.json()['code'] == 404:
-#     await delete_image.finish('没有找到该图片')
-# else:
-#     await delete_image.finish('发生未知错误')
-
-
-update_image = on_command('修改分级', block=True, priority=10, permission=SUPERUSER)
-
-
-@update_image.handle()
-async def update_image_(state: T_State, msg: Message = CommandArg()):
-    if text := msg.get("text"):
-        state["param"] = text
-
-
-@update_image.got("param", prompt="请输入图片的id和分级")
-async def update_image_(foo: str = ArgPlainText("param")):
-    try:
-        re_message = re.match(r".*?id(?P<image_id>\d*).*?", foo.replace(" ", ""))
-        image_id = re_message.group('image_id')
-        re_sort = re.match(r".*?分级(?P<sort>(全龄|r16|r18)).*?", foo.replace(" ", ""))
-        sort = re_sort.group('sort')
-        print(sort)
-        if image_id and sort:
-            url = f"https://api.xilusheng.top/nonebot/pixiv//{image_id}/"
-            if sort == "r18":
-                sort = 2
-            elif sort == "r16":
-                sort = 1
-            elif sort == "全龄":
-                sort = 0
-            else:
-                await update_image.finish("请输入正确的分级参数，如：全龄|r16|r18")
-            data = {
-                "sort": sort
-            }
-            result = requests.patch(url, data=data)
-            if result.status_code == 200:
-                await update_image.finish('修改分级成功')
-            elif result.status_code == 400:
-                error = result.json()['data']
-                await update_image.finish(error)
-            else:
-                await update_image.finish("发生未知错误")
-        await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
-    except AttributeError:
-        await update_image.finish("请输入正确参数格式，如：id 1 分级 全龄")
+        await set_r18.finish("r18设置失败")

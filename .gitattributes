@@ -1,0 +1,6 @@
+# Linux 服务器上的脚本必须以 LF 结尾：
+# 本机 Windows 的 core.autocrlf=true 会在检出时把行尾改成 CRLF，
+# 导致服务器上 bash 报 "\r: command not found"，因此对这些文件强制 eol=lf。
+*.sh text eol=lf
+*.service text eol=lf
+*.timer text eol=lf
