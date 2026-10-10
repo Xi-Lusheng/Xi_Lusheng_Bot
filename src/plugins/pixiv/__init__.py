@@ -54,6 +54,9 @@ __plugin_meta__ = PluginMetadata(
 
 setu = on_regex("^来.*[点张份].+$", priority=10, block=True)
 
+# 全局涩图并发闸门：值为 1 表示同一时刻只跑一条涩图流程（理由见 setu_ 内的注释）。
+_SETU_LOCK = asyncio.Semaphore(1)
+
 
 # ---------------------------------------------------------------------------
 # 输入解析
@@ -147,31 +150,36 @@ async def setu_(bot: Bot, event: MessageEvent):
 
         await setu.send(f"{msg}\n图片取自：{api}", at_sender=True)
 
-        # 并发下载。func 内部已经吃掉了异常并返回 None，不会中断 gather。
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            raw_list = await asyncio.gather(*(func(client, i["url"]) for i in images))
+        # 【并发闸门】同一时刻只允许一条涩图流程占用内存。
+        # 单张 1000000 像素的 float32 幻影坦克合成峰值约 70~95MB，
+        # 而 2026-10-10 服务器死机就是多条请求同时跑把 1.7GB 内存打爆、导致整机 thrash。
+        # 串行化后再多请求也只是排队，不会同时占用多份大数组。
+        async with _SETU_LOCK:
+            # 并发下载。func 内部已经吃掉了异常并返回 None，不会中断 gather。
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                raw_list = await asyncio.gather(*(func(client, i["url"]) for i in images))
 
-        # 关键：把 (元数据, 原图) 成对过滤，而不是先过滤出 image_list 再 zip。
-        # 原实现 zip(new_list, data) 在两图之间夹着失败项时会整体错位，
-        # 结果就是"幻影坦克的图和下方显示的 pixiv_id/链接对不上"。
-        downloaded = [(info, raw) for info, raw in zip(images, raw_list) if raw]
-        if not downloaded:
-            await setu.finish("获取图片失败。", at_sender=True)
+            # 关键：把 (元数据, 原图) 成对过滤，而不是先过滤出 image_list 再 zip。
+            # 原实现 zip(new_list, data) 在两图之间夹着失败项时会整体错位，
+            # 结果就是"幻影坦克的图和下方显示的 pixiv_id/链接对不上"。
+            downloaded = [(info, raw) for info, raw in zip(images, raw_list) if raw]
+            if not downloaded:
+                await setu.finish("获取图片失败。", at_sender=True)
 
-        msg_list = []
-        for info, raw in downloaded:
-            # make_new_image 是同步的 numpy/PIL 计算，单张约几百毫秒；
-            # 丢进线程池逐张做，既不阻塞事件循环，也不会同时持有全部原图+输出图而爆内存。
-            mirage = await asyncio.to_thread(make_new_image, raw)
-            msg_list.append(
-                MessageSegment.text("芝士幻影坦克：\n")
-                + MessageSegment.image(mirage)
-                + MessageSegment.text(
-                    f"\n图片id：{info['pixiv_id']}\n"
-                    f"r18：{info['r18']}\n"
-                    f"图片链接：{info['url']}"
+            msg_list = []
+            for info, raw in downloaded:
+                # make_new_image 是同步的 numpy/PIL 计算，单张约几百毫秒；
+                # 丢进线程池逐张做，既不阻塞事件循环，也不会同时持有全部原图+输出图而爆内存。
+                mirage = await asyncio.to_thread(make_new_image, raw)
+                msg_list.append(
+                    MessageSegment.text("芝士幻影坦克：\n")
+                    + MessageSegment.image(mirage)
+                    + MessageSegment.text(
+                        f"\n图片id：{info['pixiv_id']}\n"
+                        f"r18：{info['r18']}\n"
+                        f"图片链接：{info['url']}"
+                    )
                 )
-            )
 
         await send_forward_msg_group(
             bot, event, name=f"{Bot_NICKNAME}", msgs=[m for m in msg_list if m]

@@ -109,8 +109,8 @@ async def _(bot: Bot, event: MessageEvent, img_url: Message = Arg('img_url')):
                                    '相似度：{}'.format(datas['similarity'])))
             await send_forward_msg_group(bot, event, name=f'{Bot_NICKNAME}',
                                          msgs=msg if msg else ['没有找到相似的图片呢，换一张试试'])
-    except ActionFailed:
-        await picture.finish(f'{Bot_NICKNAME}可能被企鹅风控了', at_sender=True)
+    # except ActionFailed:
+    #     await picture.finish(f'{Bot_NICKNAME}可能被企鹅风控了', at_sender=True)
     except ConnectionError:
         await picture.finish(f'等一下！太快了！让{Bot_NICKNAME}休息一会吧', at_sender=True)
     except TypeError or KeyError:

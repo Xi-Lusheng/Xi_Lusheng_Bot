@@ -34,6 +34,11 @@ STATUS_FILE="$REPO_DIR/.update_status.json"
 LOCK_FILE="/tmp/xilusheng-autoupdate.lock"
 WAIT_SECONDS=25
 
+# 仓库里版本化的 systemd 单元；服务器上安装的就是它
+UNIT_SRC="$REPO_DIR/scripts/systemd/xilusheng-bot.service"
+UNIT_DST="/etc/systemd/system/xilusheng-bot.service"
+UNIT_BACKUP="/tmp/xilusheng-bot.service.bak.$$"
+
 log() {
     local line="[$(date '+%F %T')] $*"
     echo "$line" >> "$UPDATE_LOG"
@@ -57,6 +62,30 @@ install_deps() {
 
 deps_changed() {
     ! git -C "$REPO_DIR" diff --quiet "$1" "$2" -- requirements.txt
+}
+
+# 把仓库里的 systemd 单元同步到系统（MemoryMax / LOG_LEVEL 都在里面）。
+# 首次改动前先备份原单元，回滚时还原。
+sync_systemd_unit() {
+    [ -f "$UNIT_SRC" ] || return 0
+    if [ -f "$UNIT_DST" ] && [ ! -f "$UNIT_BACKUP" ]; then
+        cp -a "$UNIT_DST" "$UNIT_BACKUP"
+    fi
+    if cmp -s "$UNIT_SRC" "$UNIT_DST"; then
+        return 0
+    fi
+    install -m 644 "$UNIT_SRC" "$UNIT_DST" || return 1
+    systemctl daemon-reload || return 1
+    log "已同步 systemd 单元：$UNIT_DST"
+    return 0
+}
+
+restore_systemd_unit() {
+    [ -f "$UNIT_BACKUP" ] || return 0
+    install -m 644 "$UNIT_BACKUP" "$UNIT_DST" || return 1
+    systemctl daemon-reload || return 1
+    log "已还原 systemd 单元：$UNIT_DST"
+    return 0
 }
 
 # 只做静态自检，不启动服务：语法编译 + 真实加载一遍全部插件，
@@ -142,6 +171,7 @@ rollback() {
     if [ -n "$DEPS_CHANGED" ]; then
         install_deps || log "警告：回滚后依赖恢复失败"
     fi
+    restore_systemd_unit || log "警告：回滚后 systemd 单元还原失败"
     if restart_and_check; then
         log "回滚完成，服务已恢复到 $OLD_SHA"
     else
@@ -165,6 +195,12 @@ if deps_changed "$OLD_SHA" "$NEW_SHA"; then
         rollback "依赖安装失败"
         exit 1
     fi
+fi
+
+# 2.5 同步 systemd 单元（MemoryMax=700M 与 LOG_LEVEL=INFO 都在里面）
+if ! sync_systemd_unit; then
+    rollback "systemd 单元同步失败"
+    exit 1
 fi
 
 # 3. 自检

@@ -1,0 +1,22 @@
+[Unit]
+Description=Xi_Lusheng NoneBot2 (OneBot v11)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/Xi_Lusheng_Bot
+ExecStart=/opt/Xi_Lusheng_Bot/.venv/bin/python bot.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+Environment=ENVIRONMENT=prod
+# 2026-10-10 死机复盘：DEBUG 级别把每条群消息都写进 journald，
+# 1.7GB 的机器扛不住，改成 INFO。
+Environment=LOG_LEVEL=INFO
+# 关键保护：给 bot 一个内存上限。下次再爆内存时被 OOM 杀掉的是 bot 自己
+# （systemd 会按 Restart=always 拉起来），而不是让整台机器 thrash 到死机。
+MemoryMax=700M
+
+[Install]
+WantedBy=multi-user.target

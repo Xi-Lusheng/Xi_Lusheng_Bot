@@ -24,7 +24,7 @@ from utils.net import get as http_get
 
 API_ENDPOINT = "https://api.lolicon.app/setu/v2"
 
-MAX_IMAGES = 10  # 单次最多请求/发送 10 张，超过只发 1 张
+MAX_IMAGES = 3  # 单次最多请求/发送 3 张，超过只发 1 张（原来是 10，单次太多会把内存打爆）
 MAX_TAGS = 3  # Lolicon API 最多同时接受 3 个 tag
 DEFAULT_API_NAME = "lolicon API"
 
