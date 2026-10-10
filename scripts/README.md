@@ -76,6 +76,26 @@
 > 想临时换更新分支，把 service 里的 `UPDATE_BRANCH` 改成 test 即可，
 > 但不建议长期这么干 —— test 分支随时可能是坏的。
 
+## 四点五、systemd 单元也受版本管理
+
+服务器上的 \`/etc/systemd/system/xilusheng-bot.service\` 由仓库里的
+\`scripts/systemd/xilusheng-bot.service\` 覆盖安装，\`auto_update.sh\` 的
+「2.5 同步 systemd 单元」这一步负责：
+
+- 单元内容与仓库不一致时，先 \`cp -a\` 备份原单元到 \`/tmp/xilusheng-bot.service.bak.\$\$\`，
+  再 \`install -m 644\` 覆盖并 \`systemctl daemon-reload\`；
+- 更新失败回滚时，\`restore_systemd_unit\` 会把备份还原回去。
+
+单元里的两项关键配置（都是 2026-10-10 死机复盘加上的）：
+
+| 配置 | 作用 |
+| --- | --- |
+| \`MemoryMax=700M\` | 给 bot 设内存上限。下次再爆内存时被 OOM 杀掉的是 bot 自己（systemd 按 Restart=always 拉起），而不是让整台机器 thrash 到死机。 |
+| \`Environment=LOG_LEVEL=INFO\` | 原来 .env.prod 里是 DEBUG，每条群消息都写进 journald。.env.prod 被 .gitignore 忽略、无法随仓库下发，所以改用 systemd 环境变量下发（nonebot 里 os.environ 优先于 dotenv）。 |
+
+注意：更新脚本自身也在仓库里，所以同步单元的代码要等到下一次更新
+（脚本文件被 git 换成新版本后重新执行）才会真正生效——这是自更新脚本的正常时序。
+
 ## 五、为什么更新脚本自己能安全地更新自己
 
 `auto_update.sh` 本身也在仓库里，会被 `git reset --hard` 覆盖。
